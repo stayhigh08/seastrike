@@ -68,15 +68,14 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelector("[data-ability='torpedo']").classList.add('selected');
         updateToggleButton();
     }
-    
-    // --- MODIFICATION 1: The entire logic is moved inside the timeout ---
-    // This ensures the delay happens BEFORE the view changes.
-    function switchTurn(delay = 2500) {
-        document.body.classList.remove('view-override');
-        const isPlayerTurnNow = gameState === 'PLAYER_TURN';
 
-        // Set a timeout. The game state and view will NOT change until it completes.
+    // --- MODIFICATION: This function now correctly delays the turn switch ---
+    function switchTurn(delay = 2500) {
+        const isPlayerTurnNow = gameState === 'PLAYER_TURN';
+        // Do not change the game state here. Clicks are already blocked by isPlayerAttacking.
+        // Wait for the specified delay before doing anything else.
         setTimeout(() => {
+            document.body.classList.remove('view-override');
             if (isPlayerTurnNow) {
                 setGameState('COMPUTER_TURN');
                 gameStatus.textContent = "Computer's Turn...";
@@ -86,8 +85,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 setGameState('PLAYER_TURN');
                 gameStatus.textContent = 'Your Turn!';
                 updateToggleButton();
-                // Allow the player to click again ONLY when their turn has actually started.
-                isPlayerAttacking = false; 
+                // Allow the player to make a move only after their turn has fully started.
+                isPlayerAttacking = false;
             }
         }, delay);
     }
@@ -115,12 +114,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function handleResize() {
         isMobileView = window.innerWidth <= MOBILE_BREAKPOINT;
+        if (!isMobileView) {
+            document.body.classList.remove('view-override');
+        }
         updateToggleButton();
     }
 
     function handleGridClick(e) {
         const clickedCell = e.target.closest('.cell');
-        if (!clickedCell || gameState === 'TRANSITION' || isPlayerAttacking) return;
+        if (!clickedCell || isPlayerAttacking) return; // Simplified check
         if (gameState === 'SETUP' && clickedCell.parentElement.id === 'player-grid') {
             placeShip(clickedCell);
         } else if (gameState === 'PLAYER_TURN' && clickedCell.parentElement.id === 'computer-grid') {
@@ -149,7 +151,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const cell = e.target.closest('.cell');
         if (gameState !== 'PLAYER_TURN' || selectedAbility !== 'cluster' || !cell) return;
         const cellId = parseInt(cell.dataset.id);
-        if (isClusterPlacementValid(cellId)) {
+        if (isClusterAttackValid(cellId, computerGrid)) {
             cell.classList.add('hover-valid');
         } else {
             cell.classList.add('hover-invalid');
@@ -215,25 +217,26 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function handlePlayerAttack(cell) {
-        if (cell.classList.contains('hit') || cell.classList.contains('miss') || isPlayerAttacking) return;
+        if (cell.classList.contains('hit') || cell.classList.contains('miss')) return;
+        
+        if (selectedAbility === 'cluster') {
+            const centerId = parseInt(cell.dataset.id);
+            if (!isClusterAttackValid(centerId, computerGrid)) {
+                computerGrid.classList.add('shake');
+                setTimeout(() => computerGrid.classList.remove('shake'), 400);
+                return; 
+            }
+        }
         
         isPlayerAttacking = true;
         
         if (selectedAbility === 'torpedo') {
             handleTorpedoAttack(cell);
         } else if (selectedAbility === 'cluster') {
-            const centerId = parseInt(cell.dataset.id);
-            if (!isClusterPlacementValid(centerId)) {
-                computerGrid.classList.add('shake');
-                setTimeout(() => computerGrid.classList.remove('shake'), 400);
-                isPlayerAttacking = false;
-                return;
-            }
             handleClusterAttack(cell);
         }
     }
 
-    // --- MODIFICATION 2: Cleaned up logic to handle the attacking flag correctly ---
     function handleTorpedoAttack(cell) {
         const cellId = parseInt(cell.dataset.id);
         const { hit, sunkShip } = checkAttack(computerShips, cellId);
@@ -244,20 +247,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 gameStatus.textContent = `You sunk their ${sunkShip.name}!`;
                 animateSinking(sunkShip, computerGrid);
                 if (checkWinCondition(playerShips, computerShips)) return;
-                // A ship was sunk, switch turns after a longer delay.
-                // isPlayerAttacking remains true to block clicks during this time.
-                switchTurn(3500);
+                switchTurn(3500); // Use a longer delay for sinking a ship
             } else {
                 gameStatus.textContent = 'Go again!';
-                // It was a hit, player gets another turn. Allow clicks again immediately.
-                isPlayerAttacking = false;
+                isPlayerAttacking = false; // Allow another attack immediately
             }
         } else {
             cell.classList.add('miss');
             showPopup("MISS", "var(--miss-color)");
-            // It was a miss, switch turns after the default delay.
-            // isPlayerAttacking remains true to block clicks during this time.
-            switchTurn();
+            switchTurn(); // Use default 2.5s delay for a miss
         }
     }
 
@@ -375,7 +373,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let centerId;
         do {
             centerId = Math.floor(Math.random() * gridSize * gridSize);
-        } while (!isClusterPlacementValid(centerId) || playerGrid.querySelector(`[data-id='${centerId}']`).classList.contains("hit") || playerGrid.querySelector(`[data-id='${centerId}']`).classList.contains("miss"));
+        } while (!isClusterAttackValid(centerId, playerGrid));
         const targetIds = [centerId, centerId - 1, centerId + 1, centerId - gridSize, centerId + gridSize];
         targetIds.forEach((id, index) => {
             setTimeout(() => {
@@ -470,11 +468,24 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         return { cells, isValid };
     }
-
-    function isClusterPlacementValid(centerId) {
+    
+    function isClusterAttackValid(centerId, gridElement) {
         const row = Math.floor(centerId / gridSize);
         const col = centerId % gridSize;
-        return row > 0 && row < gridSize - 1 && col > 0 && col < gridSize - 1;
+        
+        if (row === 0 || row === gridSize - 1 || col === 0 || col === gridSize - 1) {
+            return false;
+        }
+
+        const targetIds = [centerId, centerId - 1, centerId + 1, centerId - gridSize, centerId + gridSize];
+        for (const id of targetIds) {
+            const cell = gridElement.querySelector(`[data-id='${id}']`);
+            if (cell && (cell.classList.contains('hit') || cell.classList.contains('miss'))) {
+                return false;
+            }
+        }
+        
+        return true;
     }
 
     function showPopup(message, color) {
