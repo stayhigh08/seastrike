@@ -8,8 +8,8 @@
     --hit-color: #e63946;
     --miss-color: #457b9d;
     --sunk-color: #333;
-    --ship-color: #2980b9; 
-    /* MOBILE-FIRST SCALING: Base size on screen width */
+    /* --- MODIFICATION: Player ships are now purple --- */
+    --ship-color: var(--primary-purple); 
     --cell-size: clamp(24px, 8vw, 45px); 
 }
 
@@ -142,8 +142,16 @@ h1 {
 #computer-grid .cell:hover:not(.hover-invalid):not(.hover-valid) { background-color: var(--primary-purple); }
 .cell.hit::before, .cell.miss::before, .cell.sunk::before, .cell.ship-placed::before { background-color: transparent; }
 .cell.ship-placed { background-color: var(--ship-color); }
-.cell.hit { background-color: var(--hit-color); }
-.cell.miss { background-color: var(--miss-color); }
+
+/* --- MODIFICATION: Specific hit/miss colors for each board --- */
+/* Your attacks on the enemy board */
+#computer-grid .cell.hit { background-color: var(--hit-color); }
+#computer-grid .cell.miss { background-color: var(--miss-color); }
+
+/* Enemy attacks on your board */
+#player-grid .cell.hit { background-color: var(--hit-color); }
+#player-grid .cell.miss { background-color: rgba(255, 255, 255, 0.5); } /* Semi-transparent white for misses */
+
 .cell.sunk { background-color: var(--sunk-color); }
 .cell.hover-valid { background-color: rgba(46, 204, 113, 0.5); }
 .cell.hover-invalid { background-color: rgba(231, 76, 60, 0.5); cursor: not-allowed; }
