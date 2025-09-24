@@ -140,7 +140,7 @@ h1 {
 #computer-grid .cell { cursor: pointer; }
 #computer-grid .cell:hover { background-color: var(--primary-purple); }
 .cell.hit::before, .cell.miss::before, .cell.sunk::before, .cell.ship-placed::before { background-color: transparent; }
-.cell.ship-placed { background-color: var(--ship-color); }
+.cell.ship-placed { background-color: white; }
 .cell.hit { background-color: var(--hit-color); }
 .cell.miss { background-color: var(--miss-color); }
 .cell.sunk { background-color: var(--sunk-color); }
@@ -336,4 +336,5 @@ h1 {
 
 
 /* Abridged styles for brevity */
+
 .popup{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(.5);font-size:clamp(4rem,15vw,8rem);font-weight:800;color:#fff;text-shadow:0 0 20px rgba(0,0,0,.5);pointer-events:none;opacity:0;z-index:1000}.popup.show{animation:popup-effect 1.2s ease-out forwards}@keyframes fadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}@keyframes shake{0%,100%{transform:translateX(0)}10%,30%,50%{transform:translateX(-5px)}20%,40%,60%{transform:translateX(5px)}}@keyframes explosion{0%{transform:scale(1)}50%{transform:scale(1.8);background-color:orangered}100%{transform:scale(0)}}@keyframes popup-effect{0%,100%{opacity:0;transform:translate(-50%,-50%) scale(.5)}20%,80%{opacity:1;transform:translate(-50%,-50%) scale(1)}}.shake{animation:shake .4s}.explode{animation:explosion .5s ease-out forwards}
