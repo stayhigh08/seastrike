@@ -18,7 +18,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const shipTemplates = [{ name: 'carrier', size: 5 }, { name: 'battleship', size: 4 }, { name: 'cruiser', size: 3 }, { name: 'destroyer', size: 2 }];
     let gameState = 'SETUP', orientation = 'horizontal', selectedShip = null, playerShips = [], computerShips = [];
     
-    // THE ONLY BREAKPOINT: Synchronized with the final CSS
     const MOBILE_BREAKPOINT = 900;
     let isMobileView = window.innerWidth <= MOBILE_BREAKPOINT;
     
@@ -27,13 +26,21 @@ document.addEventListener('DOMContentLoaded', () => {
     
     let isPlayerAttacking = false;
 
+    function setGameState(newState) {
+        document.body.className = '';
+        document.body.classList.add(`gamestate-${newState.toLowerCase()}`);
+        gameState = newState;
+    }
+
     function createGrid(gridElement) { for (let i = 0; i < gridSize * gridSize; i++) { const cell = document.createElement('div'); cell.classList.add('cell'); cell.dataset.id = i; gridElement.appendChild(cell); } }
     createGrid(playerGrid); createGrid(computerGrid);
 
-    playerGrid.addEventListener('mouseover', handleMouseover);
-    playerGrid.addEventListener('mouseout', handleMouseout);
+    playerGrid.addEventListener('mouseover', handlePlayerGridMouseover);
+    playerGrid.addEventListener('mouseout', handlePlayerGridMouseout);
     playerGrid.addEventListener('click', handleGridClick);
     computerGrid.addEventListener('click', handleGridClick);
+    computerGrid.addEventListener('mouseover', handleComputerGridMouseover);
+    computerGrid.addEventListener('mouseout', handleComputerGridMouseout);
     rotateButton.addEventListener('click', () => { orientation = orientation === 'horizontal' ? 'vertical' : 'horizontal'; });
     startButton.addEventListener('click', startGame);
     powerUpsContainer.addEventListener('click', selectAbility);
@@ -41,9 +48,10 @@ document.addEventListener('DOMContentLoaded', () => {
     mobileToggleButton.addEventListener('click', toggleMobileView);
 
     initializeGame();
-    handleResize(); // Run once on load to set initial state
+    handleResize();
 
     function initializeGame() {
+        setGameState('SETUP');
         populateShipSelection();
         const firstShip = shipSelectionContainer.querySelector('.ship');
         if (firstShip) firstShip.click();
@@ -52,86 +60,57 @@ document.addEventListener('DOMContentLoaded', () => {
     function startGame() {
         if (playerShips.length !== shipTemplates.length) { alert('Please place all your ships first!'); return; }
         placeComputerShips();
-        gameState = 'PLAYER_TURN';
+        setGameState('PLAYER_TURN');
         gameStatus.textContent = 'Your Turn!';
         shipSelectionBox.classList.add('hidden');
         actionButtonsBox.classList.add('hidden');
         powerUpsContainer.classList.remove('hidden');
         document.querySelector("[data-ability='torpedo']").classList.add('selected');
-        updateBoardVisibility();
+        updateToggleButton();
     }
 
     function switchTurn() {
+        document.body.classList.remove('view-override');
         const isPlayerTurnNow = gameState === 'PLAYER_TURN' || gameState === 'TRANSITION';
-        gameState = 'TRANSITION';
+        setGameState('TRANSITION');
         setTimeout(() => {
             if (isPlayerTurnNow) {
-                gameState = 'COMPUTER_TURN';
+                setGameState('COMPUTER_TURN');
                 gameStatus.textContent = "Computer's Turn...";
-                updateBoardVisibility();
+                updateToggleButton();
                 setTimeout(computerTurn, 1000);
             } else {
-                gameState = 'PLAYER_TURN';
+                setGameState('PLAYER_TURN');
                 gameStatus.textContent = 'Your Turn!';
-                updateBoardVisibility();
+                updateToggleButton();
             }
         }, 2000);
     }
-
-    function updateBoardVisibility() {
-        const playerBoard = document.getElementById('player-board-container');
-        const computerBoard = document.getElementById('computer-board-container');
-
-        if (!isMobileView) {
-            playerBoard.classList.remove('board-hidden');
-            computerBoard.classList.remove('board-hidden');
+    
+    function updateToggleButton() {
+        const isOverridden = document.body.classList.contains('view-override');
+        if (!isMobileView || gameState === 'SETUP' || gameState === 'GAMEOVER') {
             mobileToggleButton.classList.add('hidden');
             return;
         }
-        
         mobileToggleButton.classList.remove('hidden');
 
-        if (gameState === 'SETUP') {
-            playerBoard.classList.remove('board-hidden');
-            computerBoard.classList.add('board-hidden');
-            mobileToggleButton.classList.add('hidden');
-        } else if (gameState === 'PLAYER_TURN') {
-            playerBoard.classList.add('board-hidden');
-            computerBoard.classList.remove('board-hidden');
-            mobileToggleButton.textContent = 'View Your Fleet';
-        } else if (gameState === 'COMPUTER_TURN' || gameState === 'TRANSITION') {
-            playerBoard.classList.remove('board-hidden');
-            computerBoard.classList.add('board-hidden');
-            mobileToggleButton.textContent = 'View Enemy Waters';
-        } else if (gameState === 'GAMEOVER') {
-            playerBoard.classList.remove('board-hidden');
-            computerBoard.classList.remove('board-hidden');
-            mobileToggleButton.classList.add('hidden');
+        const showingPlayerBoard = (gameState === 'COMPUTER_TURN' && !isOverridden) || (gameState === 'PLAYER_TURN' && isOverridden);
+        if (showingPlayerBoard) {
+            mobileToggleButton.textContent = 'Enemy Waters';
+        } else {
+            mobileToggleButton.textContent = 'Your Fleet';
         }
     }
 
     function toggleMobileView() {
-        const playerBoard = document.getElementById('player-board-container');
-        const computerBoard = document.getElementById('computer-board-container');
-        const isPlayerBoardHidden = playerBoard.classList.contains('board-hidden');
-
-        if (isPlayerBoardHidden) {
-            playerBoard.classList.remove('board-hidden');
-            computerBoard.classList.add('board-hidden');
-            mobileToggleButton.textContent = 'View Enemy Waters';
-        } else {
-            playerBoard.classList.add('board-hidden');
-            computerBoard.classList.remove('board-hidden');
-            mobileToggleButton.textContent = 'View Your Fleet';
-        }
+        document.body.classList.toggle('view-override');
+        updateToggleButton();
     }
 
     function handleResize() {
-        const currentlyMobile = window.innerWidth <= MOBILE_BREAKPOINT;
-        if (currentlyMobile !== isMobileView) {
-            isMobileView = currentlyMobile;
-            updateBoardVisibility();
-        }
+        isMobileView = window.innerWidth <= MOBILE_BREAKPOINT;
+        updateToggleButton();
     }
 
     function handleGridClick(e) {
@@ -144,9 +123,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function handleMouseover(e) {
+    function handlePlayerGridMouseover(e) {
         const cell = e.target.closest('.cell');
-        if (gameState !== 'SETUP' || !selectedShip || !cell || cell.parentElement.id !== 'player-grid') return;
+        if (gameState !== 'SETUP' || !selectedShip || !cell) return;
         const startId = parseInt(cell.dataset.id);
         const { cells, isValid } = getShipCells(startId, selectedShip.size, orientation);
         const isTaken = cells.some(id => playerGrid.querySelector(`[data-id='${id}']`)?.classList.contains('ship-placed'));
@@ -157,8 +136,23 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function handleMouseout() {
-        document.querySelectorAll('.cell').forEach(c => c.classList.remove('hover-valid', 'hover-invalid'));
+    function handlePlayerGridMouseout() {
+        document.querySelectorAll('#player-grid .cell').forEach(c => c.classList.remove('hover-valid', 'hover-invalid'));
+    }
+
+    function handleComputerGridMouseover(e) {
+        const cell = e.target.closest('.cell');
+        if (gameState !== 'PLAYER_TURN' || selectedAbility !== 'cluster' || !cell) return;
+        const cellId = parseInt(cell.dataset.id);
+        if (isClusterPlacementValid(cellId)) {
+            cell.classList.add('hover-valid');
+        } else {
+            cell.classList.add('hover-invalid');
+        }
+    }
+
+    function handleComputerGridMouseout() {
+        document.querySelectorAll('#computer-grid .cell').forEach(c => c.classList.remove('hover-valid', 'hover-invalid'));
     }
 
     function populateShipSelection() {
@@ -201,6 +195,9 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 gameStatus.textContent = "Your fleet is ready!";
             }
+        } else {
+            playerGrid.classList.add('shake');
+            setTimeout(() => playerGrid.classList.remove('shake'), 400);
         }
     }
 
@@ -216,11 +213,17 @@ document.addEventListener('DOMContentLoaded', () => {
         if (cell.classList.contains('hit') || cell.classList.contains('miss') || isPlayerAttacking) return;
         
         isPlayerAttacking = true;
-        gameState = 'TRANSITION';
         
         if (selectedAbility === 'torpedo') {
             handleTorpedoAttack(cell);
         } else if (selectedAbility === 'cluster') {
+            const centerId = parseInt(cell.dataset.id);
+            if (!isClusterPlacementValid(centerId)) {
+                computerGrid.classList.add('shake');
+                setTimeout(() => computerGrid.classList.remove('shake'), 400);
+                isPlayerAttacking = false;
+                return;
+            }
             handleClusterAttack(cell);
         }
     }
@@ -239,7 +242,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 switchTurn();
             } else {
                 gameStatus.textContent = 'Go again!';
-                gameState = 'PLAYER_TURN';
                 isPlayerAttacking = false;
             }
         } else {
@@ -252,7 +254,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function handleClusterAttack(cell) {
         if (clusterBombs <= 0) {
-            gameState = 'PLAYER_TURN';
             isPlayerAttacking = false;
             return;
         }
@@ -278,7 +279,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (checkWinCondition(playerShips, computerShips)) return;
             if (anyHit) {
                 gameStatus.textContent = 'Cluster bomb hit! Go again.';
-                gameState = 'PLAYER_TURN';
                 isPlayerAttacking = false;
             } else {
                 showPopup("MISS", "var(--miss-color)");
@@ -367,7 +367,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let centerId;
         do {
             centerId = Math.floor(Math.random() * gridSize * gridSize);
-        } while (playerGrid.querySelector(`[data-id='${centerId}']`).classList.contains("hit") || playerGrid.querySelector(`[data-id='${centerId}']`).classList.contains("miss"));
+        } while (!isClusterPlacementValid(centerId) || playerGrid.querySelector(`[data-id='${centerId}']`).classList.contains("hit") || playerGrid.querySelector(`[data-id='${centerId}']`).classList.contains("miss"));
         const targetIds = [centerId, centerId - 1, centerId + 1, centerId - gridSize, centerId + gridSize];
         targetIds.forEach((id, index) => {
             setTimeout(() => {
@@ -436,10 +436,10 @@ document.addEventListener('DOMContentLoaded', () => {
     function checkWinCondition(attackingFleet, defendingFleet) {
         const allSunk = defendingFleet.every(ship => ship.hits.length === ship.cells.length);
         if (allSunk) {
-            gameState = 'GAMEOVER';
+            setGameState('GAMEOVER');
             const winner = attackingFleet === playerShips ? 'You' : 'The Computer';
             gameStatus.textContent = `GAME OVER! ${winner} Win!`;
-            updateBoardVisibility();
+            updateToggleButton();
             return true;
         }
         return false;
@@ -457,9 +457,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 id = startId + (i * gridSize);
                 if (id >= gridSize * gridSize) isValid = false;
             }
+            if(id >= gridSize * gridSize) isValid = false;
             cells.push(id);
         }
         return { cells, isValid };
+    }
+
+    function isClusterPlacementValid(centerId) {
+        const row = Math.floor(centerId / gridSize);
+        const col = centerId % gridSize;
+        return row > 0 && row < gridSize - 1 && col > 0 && col < gridSize - 1;
     }
 
     function showPopup(message, color) {
