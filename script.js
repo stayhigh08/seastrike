@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const rotateButton = document.getElementById('rotate-button');
     const startButton = document.getElementById('start-button');
     const gameStatus = document.getElementById('game-status');
+    const gameStatusText = document.querySelector('#game-status span');
     const popupMessage = document.getElementById('popup-message');
     const powerUpsContainer = document.getElementById('power-ups-container');
     const clusterCountSpan = document.getElementById('cluster-count');
@@ -15,6 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Game State ---
     const gridSize = 10;
+    const totalCells = gridSize * gridSize * 2;
     const shipTemplates = [{ name: 'carrier', size: 5 }, { name: 'battleship', size: 4 }, { name: 'cruiser', size: 3 }, { name: 'destroyer', size: 2 }];
     let gameState = 'SETUP', orientation = 'horizontal', selectedShip = null, playerShips = [], computerShips = [];
     
@@ -25,6 +27,12 @@ document.addEventListener('DOMContentLoaded', () => {
     let computerClusterBombs = 2, aiMode = 'HUNT', aiTargetQueue = [], aiKnownHits = [];
     
     let isPlayerAttacking = false;
+
+    function updateGameProgress() {
+        const usedCells = document.querySelectorAll('.grid .hit, .grid .miss').length;
+        const progressPercentage = (usedCells / totalCells) * 100;
+        gameStatus.style.setProperty('--progress-width', `${progressPercentage}%`);
+    }
 
     function setGameState(newState) {
         document.body.className = '';
@@ -55,13 +63,15 @@ document.addEventListener('DOMContentLoaded', () => {
         populateShipSelection();
         const firstShip = shipSelectionContainer.querySelector('.ship');
         if (firstShip) firstShip.click();
+        updateGameProgress();
     }
 
     function startGame() {
         if (playerShips.length !== shipTemplates.length) { alert('Please place all your ships first!'); return; }
+        document.body.classList.add('all-ships-placed');
         placeComputerShips();
         setGameState('PLAYER_TURN');
-        gameStatus.textContent = 'Your Turn!';
+        gameStatusText.textContent = 'Your Turn!';
         shipSelectionBox.classList.add('hidden');
         actionButtonsBox.classList.add('hidden');
         powerUpsContainer.classList.remove('hidden');
@@ -69,23 +79,19 @@ document.addEventListener('DOMContentLoaded', () => {
         updateToggleButton();
     }
 
-    // --- MODIFICATION: This function now correctly delays the turn switch ---
     function switchTurn(delay = 2500) {
         const isPlayerTurnNow = gameState === 'PLAYER_TURN';
-        // Do not change the game state here. Clicks are already blocked by isPlayerAttacking.
-        // Wait for the specified delay before doing anything else.
         setTimeout(() => {
             document.body.classList.remove('view-override');
             if (isPlayerTurnNow) {
                 setGameState('COMPUTER_TURN');
-                gameStatus.textContent = "Computer's Turn...";
+                gameStatusText.textContent = "Computer's Turn...";
                 updateToggleButton();
                 setTimeout(computerTurn, 1000);
             } else {
                 setGameState('PLAYER_TURN');
-                gameStatus.textContent = 'Your Turn!';
+                gameStatusText.textContent = 'Your Turn!';
                 updateToggleButton();
-                // Allow the player to make a move only after their turn has fully started.
                 isPlayerAttacking = false;
             }
         }, delay);
@@ -122,7 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function handleGridClick(e) {
         const clickedCell = e.target.closest('.cell');
-        if (!clickedCell || isPlayerAttacking) return; // Simplified check
+        if (!clickedCell || isPlayerAttacking) return;
         if (gameState === 'SETUP' && clickedCell.parentElement.id === 'player-grid') {
             placeShip(clickedCell);
         } else if (gameState === 'PLAYER_TURN' && clickedCell.parentElement.id === 'computer-grid') {
@@ -147,19 +153,31 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('#player-grid .cell').forEach(c => c.classList.remove('hover-valid', 'hover-invalid'));
     }
 
+    // --- MODIFICATION: This function now shows the full 5-cell cluster preview ---
     function handleComputerGridMouseover(e) {
         const cell = e.target.closest('.cell');
         if (gameState !== 'PLAYER_TURN' || selectedAbility !== 'cluster' || !cell) return;
-        const cellId = parseInt(cell.dataset.id);
-        if (isClusterAttackValid(cellId, computerGrid)) {
-            cell.classList.add('hover-valid');
+
+        const centerId = parseInt(cell.dataset.id);
+        
+        if (isClusterAttackValid(centerId, computerGrid)) {
+            const targetIds = [centerId, centerId - 1, centerId + 1, centerId - gridSize, centerId + gridSize];
+            targetIds.forEach(id => {
+                const targetCell = computerGrid.querySelector(`[data-id='${id}']`);
+                if (targetCell) {
+                    targetCell.classList.add('hover-cluster'); // Use the new preview class
+                }
+            });
         } else {
             cell.classList.add('hover-invalid');
         }
     }
-
+    
+    // --- MODIFICATION: This function now clears the new cluster preview class ---
     function handleComputerGridMouseout() {
-        document.querySelectorAll('#computer-grid .cell').forEach(c => c.classList.remove('hover-valid', 'hover-invalid'));
+        document.querySelectorAll('#computer-grid .cell').forEach(c => {
+            c.classList.remove('hover-invalid', 'hover-cluster');
+        });
     }
 
     function populateShipSelection() {
@@ -167,7 +185,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const remainingShips = shipTemplates.filter(t => !playerShips.some(p => p.name === t.name));
         if (remainingShips.length > 0) {
              const nextShipName = remainingShips[0].name.charAt(0).toUpperCase() + remainingShips[0].name.slice(1);
-             gameStatus.textContent = `Place your ${nextShipName}`;
+             gameStatusText.textContent = `Place your ${nextShipName}`;
         }
         remainingShips.forEach(shipInfo => {
             const shipDiv = document.createElement('div');
@@ -179,7 +197,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 e.currentTarget.classList.add('selected');
                 selectedShip = shipInfo;
                 const selectedShipName = selectedShip.name.charAt(0).toUpperCase() + selectedShip.name.slice(1);
-                gameStatus.textContent = `Place your ${selectedShipName}`;
+                gameStatusText.textContent = `Place your ${selectedShipName}`;
             });
             shipSelectionContainer.appendChild(shipDiv);
         });
@@ -200,7 +218,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (nextShipElement) {
                 nextShipElement.click();
             } else {
-                gameStatus.textContent = "Your fleet is ready!";
+                gameStatusText.textContent = "Your fleet is ready!";
             }
         } else {
             playerGrid.classList.add('shake');
@@ -244,19 +262,20 @@ document.addEventListener('DOMContentLoaded', () => {
             cell.classList.add('hit');
             showPopup("HIT!", "var(--hit-color)");
             if (sunkShip) {
-                gameStatus.textContent = `You sunk their ${sunkShip.name}!`;
+                gameStatusText.textContent = `You sunk their ${sunkShip.name}!`;
                 animateSinking(sunkShip, computerGrid);
                 if (checkWinCondition(playerShips, computerShips)) return;
-                switchTurn(3500); // Use a longer delay for sinking a ship
+                switchTurn(3500);
             } else {
-                gameStatus.textContent = 'Go again!';
-                isPlayerAttacking = false; // Allow another attack immediately
+                gameStatusText.textContent = 'Go again!';
+                isPlayerAttacking = false;
             }
         } else {
             cell.classList.add('miss');
             showPopup("MISS", "var(--miss-color)");
-            switchTurn(); // Use default 2.5s delay for a miss
+            switchTurn();
         }
+        updateGameProgress();
     }
 
     function handleClusterAttack(cell) {
@@ -283,9 +302,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         setTimeout(() => {
+            updateGameProgress();
             if (checkWinCondition(playerShips, computerShips)) return;
             if (anyHit) {
-                gameStatus.textContent = 'Cluster bomb hit! Go again.';
+                gameStatusText.textContent = 'Cluster bomb hit! Go again.';
                 isPlayerAttacking = false;
             } else {
                 showPopup("MISS", "var(--miss-color)");
@@ -307,9 +327,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function computerTurn() {
         if (gameState !== 'COMPUTER_TURN') return;
-        if ("HUNT" === aiMode && computerClusterBombs > 0 && Math.random() < .2) {
+
+        if ("HUNT" === aiMode && computerClusterBombs > 0 && Math.random() < 0.5) {
             return void handleComputerClusterAttack();
         }
+
         let targetId;
         if ("TARGET" === aiMode && aiTargetQueue.length > 0) {
             targetId = aiTargetQueue.shift();
@@ -327,7 +349,7 @@ document.addEventListener('DOMContentLoaded', () => {
             targetCell.classList.add("hit");
             showPopup("HIT!", "var(--hit-color)");
             if (sunkShip) {
-                gameStatus.textContent = `The computer sunk your ${sunkShip.name}!`;
+                gameStatusText.textContent = `The computer sunk your ${sunkShip.name}!`;
                 aiMode = "HUNT";
                 aiTargetQueue = [];
                 aiKnownHits = [];
@@ -335,7 +357,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (checkWinCondition(computerShips, playerShips)) return;
                 switchTurn(3500);
             } else {
-                gameStatus.textContent = "Computer hit! It goes again.";
+                gameStatusText.textContent = "Computer hit! It goes again.";
                 aiMode = "TARGET";
                 aiKnownHits.push(targetId);
                 updateAiTargetQueue();
@@ -346,6 +368,7 @@ document.addEventListener('DOMContentLoaded', () => {
             showPopup("MISS", "var(--miss-color)");
             switchTurn();
         }
+        updateGameProgress();
     }
 
     function updateAiTargetQueue() {
@@ -368,20 +391,30 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function handleComputerClusterAttack() {
-        gameStatus.textContent = "Computer uses a Cluster Bomb!";
+        gameStatusText.textContent = "Computer uses a Cluster Bomb!";
         computerClusterBombs--;
         let centerId;
         do {
             centerId = Math.floor(Math.random() * gridSize * gridSize);
         } while (!isClusterAttackValid(centerId, playerGrid));
+        
         const targetIds = [centerId, centerId - 1, centerId + 1, centerId - gridSize, centerId + gridSize];
+        let anyHit = false;
+        let clusterHits = [];
+        let shipWasSunkDuringCluster = false;
+
         targetIds.forEach((id, index) => {
             setTimeout(() => {
                 const targetCell = playerGrid.querySelector(`[data-id='${id}']`);
                 if (targetCell && !targetCell.classList.contains("hit") && !targetCell.classList.contains("miss")) {
                     const { hit, sunkShip } = checkAttack(playerShips, id);
                     targetCell.classList.add(hit ? "hit" : "miss");
+                    if (hit) {
+                        anyHit = true;
+                        clusterHits.push(id);
+                    }
                     if (sunkShip) {
+                        shipWasSunkDuringCluster = true;
                         animateSinking(sunkShip, playerGrid);
                         aiMode = "HUNT";
                         aiTargetQueue = [];
@@ -390,9 +423,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }, 150 * index);
         });
+
         setTimeout(() => {
+            updateGameProgress();
             if (checkWinCondition(computerShips, playerShips)) return;
-            switchTurn();
+            
+            if (shipWasSunkDuringCluster) {
+                gameStatusText.textContent = `Computer sunk your ship! It goes again.`;
+                setTimeout(computerTurn, 1200);
+            } else if (anyHit) {
+                aiKnownHits.push(...clusterHits);
+                aiMode = "TARGET";
+                updateAiTargetQueue();
+                gameStatusText.textContent = 'Computer cluster bomb hit! It goes again.';
+                setTimeout(computerTurn, 1200);
+            } else {
+                switchTurn();
+            }
         }, 1500);
     }
 
@@ -444,7 +491,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (allSunk) {
             setGameState('GAMEOVER');
             const winner = attackingFleet === playerShips ? 'You' : 'The Computer';
-            gameStatus.textContent = `GAME OVER! ${winner} Win!`;
+            gameStatusText.textContent = `GAME OVER! ${winner} Win!`;
             updateToggleButton();
             return true;
         }
