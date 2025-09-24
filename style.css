@@ -4,16 +4,13 @@
     --card-black: #1A1A1A;
     --grid-color: rgba(147, 112, 219, 0.05);
     --dot-color: rgba(255, 255, 255, 0.1);
-    
-    /* --- MODIFICATION: New Color Palette --- */
-    --attention-color: #FF4500;      /* Fiery orange-red for primary actions */
-    --go-color: #39FF14;             /* Vibrant green for "Your Turn!" status */
-    --ship-color: #4169E1;           /* Royal blue for player ships */
-    --hit-color: #FF4500;             /* Fiery orange-red for hits */
+    --attention-color: #FF4500;
+    --go-color: #39FF14;
+    --ship-color: #4169E1;
+    --hit-color: #FF4500;
     --miss-color: #457b9d;
-    --sunk-color: #8B0000;           /* Dark, smoldering red for sunk ships */
-    --enemy-waters-color: #191970;   /* Deep navy blue for enemy grid border */
-
+    --sunk-color: #8B0000;
+    --enemy-waters-color: #191970;
     --cell-size: clamp(24px, 8vw, 45px); 
 }
 
@@ -35,6 +32,16 @@ body {
         linear-gradient(to right, var(--grid-color) 1px, transparent 1px),
         linear-gradient(to bottom, var(--grid-color) 1px, transparent 1px);
     background-size: 60px 60px;
+    animation: moveGrid 4s linear infinite;
+}
+
+@keyframes moveGrid {
+    from {
+        background-position: 0 0;
+    }
+    to {
+        background-position: 0 -120px;
+    }
 }
 
 main#game-container {
@@ -86,21 +93,43 @@ h1 {
     opacity: 0.8;
 }
 
-/* --- MODIFICATION: Using the new vibrant green for the status indicator --- */
 #game-status {
-    background-color: transparent;
+    position: relative;
+    background-color: var(--card-black);
     border: 1px solid var(--go-color);
-    color: var(--go-color);
-    font-family: 'Roboto Mono', sans-serif;
     padding: 0.5rem 1.5rem;
     border-radius: 50px;
-    font-size: clamp(0.8rem, 3vw, 1rem);
     margin-top: 1rem;
     text-align: center;
+    overflow: hidden;
+    width: 100%;
+    max-width: 450px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#game-status::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: var(--progress-width, 0%);
+    background-color: rgba(57, 255, 20, 0.3);
+    transition: width 0.5s ease-in-out;
+}
+
+#game-status span {
+    position: relative;
+    z-index: 1;
+    color: var(--go-color);
+    font-family: 'Roboto Mono', sans-serif;
+    font-size: clamp(0.8rem, 3vw, 1rem);
     text-transform: uppercase;
     letter-spacing: 1.5px;
-    text-shadow: 0 0 8px rgba(57, 255, 20, 0.5); /* Added a glow to match vibrancy */
+    text-shadow: 0 0 8px rgba(57, 255, 20, 0.5);
 }
+
 
 #mobile-toggle {
     margin-top: 1rem;
@@ -136,7 +165,6 @@ h1 {
     background-color: var(--card-black);
 }
 
-/* --- MODIFICATION: Enemy grid now has a deep navy border --- */
 #computer-grid { border-color: var(--enemy-waters-color); }
 
 .cell { border-radius: 4px; position: relative; }
@@ -146,14 +174,35 @@ h1 {
     background-color: var(--dot-color); border-radius: 50%;
 }
 #computer-grid .cell { cursor: pointer; }
-#computer-grid .cell:hover:not(.hover-invalid):not(.hover-valid) { background-color: var(--primary-purple); }
+#computer-grid .cell:hover:not(.hover-invalid):not(.hover-cluster) { background-color: var(--primary-purple); }
 .cell.hit::before, .cell.miss::before, .cell.sunk::before, .cell.ship-placed::before { background-color: transparent; }
 .cell.ship-placed { background-color: var(--ship-color); }
-.cell.hit { background-color: var(--hit-color); }
-.cell.miss { background-color: var(--miss-color); }
-.cell.sunk { background-color: var(--sunk-color); }
+
+#computer-grid .cell.hit { background-color: var(--hit-color); }
+#computer-grid .cell.miss { background-color: var(--miss-color); }
+
+#player-grid .cell.hit { background-color: white; }
+#player-grid .cell.miss { background-color: rgba(255, 255, 255, 0.5); }
+
+.cell.sunk { background-color: var(--sunk-color) !important; }
+
+.cell.sunk::after {
+    content: '✖';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: rgba(255, 255, 255, 0.7);
+    font-size: calc(var(--cell-size) * 0.8);
+    font-weight: bold;
+    line-height: 1;
+    z-index: 2;
+}
+
 .cell.hover-valid { background-color: rgba(46, 204, 113, 0.5); }
 .cell.hover-invalid { background-color: rgba(231, 76, 60, 0.5); cursor: not-allowed; }
+/* --- MODIFICATION: New style for the cluster preview --- */
+.cell.hover-cluster { background-color: rgba(255, 69, 0, 0.4); }
 
 #bottom-section {
     display: flex;
@@ -161,6 +210,10 @@ h1 {
     gap: 0.75rem;
     width: 100%;
     align-items: center;
+}
+
+#bottom-section:has(#ship-selection:empty) {
+    gap: 0;
 }
 
 .setup-box {
@@ -172,6 +225,7 @@ h1 {
 
 #action-buttons-container {
     flex-direction: row;
+    justify-content: center;
     gap: 0.75rem;
 }
 
@@ -185,11 +239,13 @@ h1 {
     gap: 8px;
     justify-items: center;
 }
+#ship-selection:empty {
+    display: none;
+}
 .ship:nth-child(1) { grid-column: 1 / 2; }
 .ship:nth-child(2) { grid-column: 2 / 3; }
 .ship:nth-child(3) { grid-column: 1 / 3; }
 .ship:nth-child(4) { grid-column: 1 / 3; }
-
 
 .ship {
     padding: 6px; border: 2px solid rgba(255,255,255,0.2);
@@ -217,11 +273,10 @@ h1 {
     max-width: 400px;
     transition: all 0.3s ease;
 }
-/* --- MODIFICATION: Primary button now uses the fiery orange-red --- */
 .btn--primary { background-color: var(--attention-color); color: white; border-color: var(--attention-color); }
 .btn--primary:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
 .btn--secondary { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,0.3); }
-.btn--secondary:hover { border-color: var(--glow-color); transform: translateY(-3px); }
+.btn--secondary:hover { transform: translateY(-3px); }
 
 #power-ups-container { 
     display: flex; 
@@ -229,10 +284,10 @@ h1 {
     justify-content: center;
     gap: 1rem; 
 }
+
 .power-up {
-    background-color: #1A1A1A; 
     color: #EAEAEA;
-    border: 1px solid rgba(255,255,255,0.3); 
+    border: 1px solid rgba(255,255,255,0.2); 
     border-radius: 12px;
     padding: 0.5rem 1rem; 
     display: flex; 
@@ -242,11 +297,22 @@ h1 {
     font-family: 'Manrope', sans-serif;
     cursor: pointer;
     transition: all 0.3s ease;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.0) 100%), #1A1A1A;
+    box-shadow: inset 0 1px 1px rgba(255,255,255,0.1), 0 2px 3px rgba(0,0,0,0.3);
 }
-.power-up:hover { border-color: var(--glow-color); }
-/* --- MODIFICATION: Selected power-up now uses the fiery orange-red --- */
-.power-up.selected { border-color: var(--attention-color); }
-.power-up:disabled { opacity: 0.5; cursor: not-allowed; }
+.power-up:hover:not(:disabled) {
+    transform: translateY(-2px);
+    border-color: rgba(255,255,255,0.4);
+}
+.power-up.selected { 
+    border-color: var(--attention-color);
+    box-shadow: 0 0 10px -2px var(--attention-color), inset 0 1px 1px rgba(255,255,255,0.1), 0 2px 3px rgba(0,0,0,0.3);
+}
+.power-up:disabled { 
+    opacity: 0.5; 
+    cursor: not-allowed; 
+    filter: grayscale(50%);
+}
 .power-up .count { 
     background-color: var(--attention-color); 
     color: white; 
@@ -258,6 +324,7 @@ h1 {
     line-height: 22px; 
     text-align: center; 
     flex-shrink: 0;
+    box-shadow: 0 0 8px rgba(255, 69, 0, 0.5);
 }
 
 .hidden { display: none !important; }
@@ -350,11 +417,15 @@ body.view-override.gamestate-computer_turn #computer-board-container { display: 
      .subtitle {
         font-size: 0.7rem;
     }
+
     #game-status {
         padding: 0.4rem 1rem;
-        font-size: 0.7rem;
         margin-top: 0.5rem;
     }
+    #game-status span {
+        font-size: 0.7rem;
+    }
+
     .ship-segment {
         --ship-seg-size: 16px;
         width: var(--ship-seg-size);
@@ -363,6 +434,13 @@ body.view-override.gamestate-computer_turn #computer-board-container { display: 
     .btn {
         padding: 0.6em 1.2em;
         font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 525px) {
+    #game-status {
+        transform: scale(1, 1);
+        max-width: 275px;
     }
 }
 
