@@ -4,12 +4,16 @@
     --card-black: #1A1A1A;
     --grid-color: rgba(147, 112, 219, 0.05);
     --dot-color: rgba(255, 255, 255, 0.1);
-    --dark-red: #D9534F;
-    --hit-color: #e63946;
+    
+    /* --- MODIFICATION: New Color Palette --- */
+    --attention-color: #FF4500;      /* Fiery orange-red for primary actions */
+    --go-color: #39FF14;             /* Vibrant green for "Your Turn!" status */
+    --ship-color: #4169E1;           /* Royal blue for player ships */
+    --hit-color: #FF4500;             /* Fiery orange-red for hits */
     --miss-color: #457b9d;
-    --sunk-color: #333;
-    /* --- MODIFICATION: Player ships are now purple --- */
-    --ship-color: var(--primary-purple); 
+    --sunk-color: #8B0000;           /* Dark, smoldering red for sunk ships */
+    --enemy-waters-color: #191970;   /* Deep navy blue for enemy grid border */
+
     --cell-size: clamp(24px, 8vw, 45px); 
 }
 
@@ -82,10 +86,11 @@ h1 {
     opacity: 0.8;
 }
 
+/* --- MODIFICATION: Using the new vibrant green for the status indicator --- */
 #game-status {
     background-color: transparent;
-    border: 1px solid var(--dark-red);
-    color: var(--dark-red);
+    border: 1px solid var(--go-color);
+    color: var(--go-color);
     font-family: 'Roboto Mono', sans-serif;
     padding: 0.5rem 1.5rem;
     border-radius: 50px;
@@ -94,6 +99,7 @@ h1 {
     text-align: center;
     text-transform: uppercase;
     letter-spacing: 1.5px;
+    text-shadow: 0 0 8px rgba(57, 255, 20, 0.5); /* Added a glow to match vibrancy */
 }
 
 #mobile-toggle {
@@ -111,7 +117,7 @@ h1 {
 }
 
 .board {
-    display: none; /* Hide boards by default, let state classes show them */
+    display: none; 
     flex-direction: column;
     align-items: center;
 }
@@ -130,7 +136,8 @@ h1 {
     background-color: var(--card-black);
 }
 
-#computer-grid { border-color: var(--dark-red); }
+/* --- MODIFICATION: Enemy grid now has a deep navy border --- */
+#computer-grid { border-color: var(--enemy-waters-color); }
 
 .cell { border-radius: 4px; position: relative; }
 .cell::before {
@@ -142,16 +149,8 @@ h1 {
 #computer-grid .cell:hover:not(.hover-invalid):not(.hover-valid) { background-color: var(--primary-purple); }
 .cell.hit::before, .cell.miss::before, .cell.sunk::before, .cell.ship-placed::before { background-color: transparent; }
 .cell.ship-placed { background-color: var(--ship-color); }
-
-/* --- MODIFICATION: Specific hit/miss colors for each board --- */
-/* Your attacks on the enemy board */
-#computer-grid .cell.hit { background-color: var(--hit-color); }
-#computer-grid .cell.miss { background-color: var(--miss-color); }
-
-/* Enemy attacks on your board */
-#player-grid .cell.hit { background-color: var(--hit-color); }
-#player-grid .cell.miss { background-color: rgba(255, 255, 255, 0.5); } /* Semi-transparent white for misses */
-
+.cell.hit { background-color: var(--hit-color); }
+.cell.miss { background-color: var(--miss-color); }
 .cell.sunk { background-color: var(--sunk-color); }
 .cell.hover-valid { background-color: rgba(46, 204, 113, 0.5); }
 .cell.hover-invalid { background-color: rgba(231, 76, 60, 0.5); cursor: not-allowed; }
@@ -218,7 +217,8 @@ h1 {
     max-width: 400px;
     transition: all 0.3s ease;
 }
-.btn--primary { background-color: var(--dark-red); color: white; border-color: var(--dark-red); }
+/* --- MODIFICATION: Primary button now uses the fiery orange-red --- */
+.btn--primary { background-color: var(--attention-color); color: white; border-color: var(--attention-color); }
 .btn--primary:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
 .btn--secondary { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,0.3); }
 .btn--secondary:hover { border-color: var(--glow-color); transform: translateY(-3px); }
@@ -244,10 +244,11 @@ h1 {
     transition: all 0.3s ease;
 }
 .power-up:hover { border-color: var(--glow-color); }
-.power-up.selected { border-color: var(--dark-red); }
+/* --- MODIFICATION: Selected power-up now uses the fiery orange-red --- */
+.power-up.selected { border-color: var(--attention-color); }
 .power-up:disabled { opacity: 0.5; cursor: not-allowed; }
 .power-up .count { 
-    background-color: var(--dark-red); 
+    background-color: var(--attention-color); 
     color: white; 
     font-size: 0.8rem; 
     font-weight: bold;
@@ -295,7 +296,7 @@ body.view-override.gamestate-computer_turn #computer-board-container { display: 
 
     .boards-container {
         flex-direction: row;
-        justify-content: center; /* FIX: Center the boards horizontally */
+        justify-content: center;
         gap: clamp(1.5rem, 3vmin, 4rem);
     }
     
