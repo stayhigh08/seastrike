@@ -32,7 +32,9 @@ body {
         linear-gradient(to right, var(--grid-color) 1px, transparent 1px),
         linear-gradient(to bottom, var(--grid-color) 1px, transparent 1px);
     background-size: 60px 60px;
-    animation: moveGrid 4s linear infinite;
+    /* --- MODIFICATION 1: Background animation is now MUCH faster --- */
+    animation: moveGrid 0.8s linear infinite;
+    overflow: hidden; /* Prevent scrollbars from appearing due to effects */
 }
 
 @keyframes moveGrid {
@@ -43,6 +45,45 @@ body {
         background-position: 0 -120px;
     }
 }
+
+/* --- MODIFICATION 2: Snowflake / Particle Effect --- */
+#snow-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none; /* Allows clicks to go through */
+    z-index: 100;
+}
+
+.snowflake {
+    position: absolute;
+    top: -10%;
+    background: white;
+    border-radius: 50%;
+    opacity: 0.3;
+    animation: fall linear infinite;
+}
+
+@keyframes fall {
+    to {
+        transform: translateY(105vh);
+    }
+}
+
+/* Give each snowflake a unique size, position, and speed */
+.snowflake:nth-child(1) { width: 3px; height: 3px; left: 10%; animation-duration: 7s; animation-delay: 0s; }
+.snowflake:nth-child(2) { width: 4px; height: 4px; left: 20%; animation-duration: 5s; animation-delay: -1s; }
+.snowflake:nth-child(3) { width: 2px; height: 2px; left: 30%; animation-duration: 8s; animation-delay: -2s; }
+.snowflake:nth-child(4) { width: 3px; height: 3px; left: 40%; animation-duration: 6s; animation-delay: -4s; }
+.snowflake:nth-child(5) { width: 4px; height: 4px; left: 50%; animation-duration: 4.5s; animation-delay: -1.5s; }
+.snowflake:nth-child(6) { width: 2px; height: 2px; left: 60%; animation-duration: 9s; animation-delay: -3s; }
+.snowflake:nth-child(7) { width: 3px; height: 3px; left: 70%; animation-duration: 5.5s; animation-delay: -0.5s; }
+.snowflake:nth-child(8) { width: 4px; height: 4px; left: 80%; animation-duration: 4s; animation-delay: -5s; }
+.snowflake:nth-child(9) { width: 2px; height: 2px; left: 90%; animation-duration: 7.5s; animation-delay: -2.5s; }
+.snowflake:nth-child(10){ width: 3px; height: 3px; left: 95%; animation-duration: 6.5s; animation-delay: -3.5s; }
+
 
 main#game-container {
     display: flex;
@@ -55,6 +96,7 @@ main#game-container {
     box-sizing: border-box;
     opacity: 0;
     animation: fadeIn 0.8s ease-out forwards;
+    z-index: 1; /* Ensure game UI is above snow */
 }
 
 #game-core-container {
@@ -201,7 +243,6 @@ h1 {
 
 .cell.hover-valid { background-color: rgba(46, 204, 113, 0.5); }
 .cell.hover-invalid { background-color: rgba(231, 76, 60, 0.5); cursor: not-allowed; }
-/* --- MODIFICATION: New style for the cluster preview --- */
 .cell.hover-cluster { background-color: rgba(255, 69, 0, 0.4); }
 
 #bottom-section {
