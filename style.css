@@ -6,7 +6,7 @@
     --dot-color: rgba(255, 255, 255, 0.1);
     --attention-color: #FF4500;
     --go-color: #39FF14;
-    --ship-color: #4169E1;
+    --ship-color: #4169E1; /* This will now be a fallback */
     --hit-color: #FF4500;
     --miss-color: #457b9d;
     --sunk-color: #8B0000;
@@ -33,8 +33,7 @@ body {
         linear-gradient(to bottom, var(--grid-color) 1px, transparent 1px);
     background-size: 60px 60px;
     animation: moveGrid 0.8s linear infinite;
-    /* --- MODIFICATION 1: Scrolling on short/wide screens is now FIXED --- */
-    overflow-x: hidden; /* This allows vertical scrolling while preventing horizontal */
+    overflow-x: hidden;
 }
 
 @keyframes moveGrid {
@@ -45,42 +44,6 @@ body {
         background-position: 0 -120px;
     }
 }
-
-#rain-container {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    pointer-events: none;
-    z-index: 100;
-}
-
-.droplet {
-    position: absolute;
-    top: -20px;
-    background: rgba(173, 216, 230, 0.4);
-    border-radius: 0% 50% 50% 50%;
-    transform: rotate(45deg);
-    animation: fall linear infinite;
-}
-
-@keyframes fall {
-    to {
-        transform: translateY(105vh) rotate(45deg);
-    }
-}
-
-.droplet:nth-child(1) { width: 1px; height: 10px; left: 10%; animation-duration: 4s; animation-delay: -1s; }
-.droplet:nth-child(2) { width: 2px; height: 8px; left: 20%; animation-duration: 3s; animation-delay: -2s; }
-.droplet:nth-child(3) { width: 1px; height: 12px; left: 30%; animation-duration: 5s; animation-delay: -4s; }
-.droplet:nth-child(4) { width: 2px; height: 7px; left: 40%; animation-duration: 3.5s; animation-delay: -0.5s; }
-.droplet:nth-child(5) { width: 1px; height: 9px; left: 50%; animation-duration: 4.5s; animation-delay: -3s; }
-.droplet:nth-child(6) { width: 2px; height: 11px; left: 60%; animation-duration: 3.8s; animation-delay: -1.2s; }
-.droplet:nth-child(7) { width: 1px; height: 8px; left: 70%; animation-duration: 5.2s; animation-delay: -2.8s; }
-.droplet:nth-child(8) { width: 2px; height: 10px; left: 80%; animation-duration: 3.3s; animation-delay: -4.5s; }
-.droplet:nth-child(9) { width: 1px; height: 13px; left: 90%; animation-duration: 4.8s; animation-delay: -0.8s; }
-.droplet:nth-child(10){ width: 2px; height: 9px; left: 95%; animation-duration: 3.1s; animation-delay: -3.7s; }
 
 main#game-container {
     display: flex;
@@ -113,13 +76,12 @@ main#game-container {
     text-align: center; 
 }
 
-/* --- MODIFICATION 2: New "Dopamine" Animation for the Title --- */
 @keyframes auroraGlow {
-    0%   { text-shadow: 0 0 20px rgba(147, 112, 219, 0.7); } /* Purple */
-    25%  { text-shadow: 0 0 30px rgba(0, 191, 255, 0.7); }   /* Deep Sky Blue */
-    50%  { text-shadow: 0 0 20px rgba(57, 255, 20, 0.7); }    /* Neon Green */
-    75%  { text-shadow: 0 0 30px rgba(0, 191, 255, 0.7); }   /* Deep Sky Blue */
-    100% { text-shadow: 0 0 20px rgba(147, 112, 219, 0.7); } /* Purple */
+    0%   { text-shadow: 0 0 20px rgba(147, 112, 219, 0.7); }
+    25%  { text-shadow: 0 0 30px rgba(0, 191, 255, 0.7); }
+    50%  { text-shadow: 0 0 20px rgba(57, 255, 20, 0.7); }
+    75%  { text-shadow: 0 0 30px rgba(0, 191, 255, 0.7); }
+    100% { text-shadow: 0 0 20px rgba(147, 112, 219, 0.7); }
 }
 
 h1 { 
@@ -234,15 +196,32 @@ h1 {
 #computer-grid .cell { cursor: pointer; }
 #computer-grid .cell:hover:not(.hover-invalid):not(.hover-cluster) { background-color: var(--primary-purple); }
 .cell.hit::before, .cell.miss::before, .cell.sunk::before, .cell.ship-placed::before { background-color: transparent; }
-.cell.ship-placed { background-color: var(--ship-color); }
 
-#computer-grid .cell.hit { background-color: var(--hit-color); }
+/* --- MODIFICATION: Ship Image Styling --- */
+#player-grid .cell.ship-placed {
+    background-color: transparent;
+    background-image: url('ship1.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+#computer-grid .cell.hit {
+    background: url('ship2.png') center/contain no-repeat, var(--hit-color);
+}
 #computer-grid .cell.miss { background-color: var(--miss-color); }
 
-#player-grid .cell.hit { background-color: white; }
+#player-grid .cell.hit {
+    background: url('ship1.png') center/contain no-repeat, white;
+}
 #player-grid .cell.miss { background-color: rgba(255, 255, 255, 0.5); }
 
-.cell.sunk { background-color: var(--sunk-color) !important; }
+#player-grid .cell.sunk {
+    background: url('ship1.png') center/contain no-repeat, var(--sunk-color) !important;
+}
+#computer-grid .cell.sunk {
+    background: url('ship2.png') center/contain no-repeat, var(--sunk-color) !important;
+}
 
 .cell.sunk::after {
     content: '✖';
@@ -538,6 +517,7 @@ body.view-override.gamestate-computer_turn #computer-board-container { display: 
         max-width: 275px;
     }
 }
+
 
 /* Abridged styles for brevity */
 .popup{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(.5);font-size:clamp(4rem,15vw,8rem);font-weight:800;color:#fff;text-shadow:0 0 20px rgba(0,0,0,.5);pointer-events:none;opacity:0;z-index:1000}.popup.show{animation:popup-effect 1.2s ease-out forwards}@keyframes fadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}@keyframes shake{0%,100%{transform:translateX(0)}10%,30%,50%{transform:translateX(-5px)}20%,40%,60%{transform:translateX(5px)}}@keyframes explosion{0%{transform:scale(1)}50%{transform:scale(1.8);background-color:orangered}100%{transform:scale(0)}}@keyframes popup-effect{0%,100%{opacity:0;transform:translate(-50%,-50%) scale(.5)}20%,80%{opacity:1;transform:translate(-50%,-50%) scale(1)}}.shake{animation:shake .4s}.explode{animation:explosion .5s ease-out forwards}
