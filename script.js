@@ -16,8 +16,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Game State ---
     const gridSize = 10;
-    const totalCells = gridSize * gridSize * 2;
     const shipTemplates = [{ name: 'carrier', size: 5 }, { name: 'battleship', size: 4 }, { name: 'cruiser', size: 3 }, { name: 'destroyer', size: 2 }];
+    
+    // --- MODIFICATION: New calculation based on "empty water" squares ---
+    const totalShipSquares = shipTemplates.reduce((sum, ship) => sum + ship.size, 0) * 2; // 28
+    const totalWaterSquares = (gridSize * gridSize * 2) - totalShipSquares; // 200 - 28 = 172
+    
     let gameState = 'SETUP', orientation = 'horizontal', selectedShip = null, playerShips = [], computerShips = [];
     
     const MOBILE_BREAKPOINT = 900;
@@ -28,9 +32,12 @@ document.addEventListener('DOMContentLoaded', () => {
     
     let isPlayerAttacking = false;
 
+    // --- MODIFICATION: Updated progress bar logic to count only misses ---
     function updateGameProgress() {
-        const usedCells = document.querySelectorAll('.grid .hit, .grid .miss').length;
-        const progressPercentage = (usedCells / totalCells) * 100;
+        // Count only the cells that are misses in the water
+        const missedCells = document.querySelectorAll('.grid .miss').length;
+        // The progress is how much of the "empty sea" has been revealed
+        const progressPercentage = (missedCells / totalWaterSquares) * 100;
         gameStatus.style.setProperty('--progress-width', `${progressPercentage}%`);
     }
 
@@ -153,7 +160,6 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('#player-grid .cell').forEach(c => c.classList.remove('hover-valid', 'hover-invalid'));
     }
 
-    // --- MODIFICATION: This function now shows the full 5-cell cluster preview ---
     function handleComputerGridMouseover(e) {
         const cell = e.target.closest('.cell');
         if (gameState !== 'PLAYER_TURN' || selectedAbility !== 'cluster' || !cell) return;
@@ -165,7 +171,7 @@ document.addEventListener('DOMContentLoaded', () => {
             targetIds.forEach(id => {
                 const targetCell = computerGrid.querySelector(`[data-id='${id}']`);
                 if (targetCell) {
-                    targetCell.classList.add('hover-cluster'); // Use the new preview class
+                    targetCell.classList.add('hover-cluster');
                 }
             });
         } else {
@@ -173,7 +179,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
-    // --- MODIFICATION: This function now clears the new cluster preview class ---
     function handleComputerGridMouseout() {
         document.querySelectorAll('#computer-grid .cell').forEach(c => {
             c.classList.remove('hover-invalid', 'hover-cluster');
