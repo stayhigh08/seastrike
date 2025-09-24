@@ -68,11 +68,14 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelector("[data-ability='torpedo']").classList.add('selected');
         updateToggleButton();
     }
-
-    function switchTurn() {
+    
+    // --- MODIFICATION 1: The entire logic is moved inside the timeout ---
+    // This ensures the delay happens BEFORE the view changes.
+    function switchTurn(delay = 2500) {
         document.body.classList.remove('view-override');
-        const isPlayerTurnNow = gameState === 'PLAYER_TURN' || gameState === 'TRANSITION';
-        setGameState('TRANSITION');
+        const isPlayerTurnNow = gameState === 'PLAYER_TURN';
+
+        // Set a timeout. The game state and view will NOT change until it completes.
         setTimeout(() => {
             if (isPlayerTurnNow) {
                 setGameState('COMPUTER_TURN');
@@ -83,8 +86,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 setGameState('PLAYER_TURN');
                 gameStatus.textContent = 'Your Turn!';
                 updateToggleButton();
+                // Allow the player to click again ONLY when their turn has actually started.
+                isPlayerAttacking = false; 
             }
-        }, 2000);
+        }, delay);
     }
     
     function updateToggleButton() {
@@ -228,6 +233,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // --- MODIFICATION 2: Cleaned up logic to handle the attacking flag correctly ---
     function handleTorpedoAttack(cell) {
         const cellId = parseInt(cell.dataset.id);
         const { hit, sunkShip } = checkAttack(computerShips, cellId);
@@ -238,16 +244,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 gameStatus.textContent = `You sunk their ${sunkShip.name}!`;
                 animateSinking(sunkShip, computerGrid);
                 if (checkWinCondition(playerShips, computerShips)) return;
-                isPlayerAttacking = false;
-                switchTurn();
+                // A ship was sunk, switch turns after a longer delay.
+                // isPlayerAttacking remains true to block clicks during this time.
+                switchTurn(3500);
             } else {
                 gameStatus.textContent = 'Go again!';
+                // It was a hit, player gets another turn. Allow clicks again immediately.
                 isPlayerAttacking = false;
             }
         } else {
             cell.classList.add('miss');
             showPopup("MISS", "var(--miss-color)");
-            isPlayerAttacking = false;
+            // It was a miss, switch turns after the default delay.
+            // isPlayerAttacking remains true to block clicks during this time.
             switchTurn();
         }
     }
@@ -282,7 +291,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 isPlayerAttacking = false;
             } else {
                 showPopup("MISS", "var(--miss-color)");
-                isPlayerAttacking = false;
                 switchTurn();
             }
         }, 1200);
@@ -327,7 +335,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 aiKnownHits = [];
                 animateSinking(sunkShip, playerGrid);
                 if (checkWinCondition(computerShips, playerShips)) return;
-                switchTurn();
+                switchTurn(3500);
             } else {
                 gameStatus.textContent = "Computer hit! It goes again.";
                 aiMode = "TARGET";
