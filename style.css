@@ -212,7 +212,7 @@ h1 {
 #computer-grid .cell.miss { background-color: var(--miss-color); }
 
 #player-grid .cell.hit {
-    background: url('ship1.png') center/contain no-repeat, white;
+    background: url('ship1.png') center/contain no-repeat, var(--hit-color);
 }
 #player-grid .cell.miss { background-color: rgba(255, 255, 255, 0.5); }
 
