@@ -7,9 +7,7 @@
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <!-- Font for the main UI -->
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&display=swap" rel="stylesheet">
-    <!-- NEW: Font for the high-tech buttons -->
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@500&display=swap" rel="stylesheet">
     
     <link rel="stylesheet" href="style.css">
@@ -26,7 +24,10 @@
                     <h1>SeaStrike</h1>
                     <p class="subtitle">A Solana Game</p>
                 </header>
-                <p id="game-status">Place your Carrier</p>
+                <!-- MODIFICATION: Changed to a div with a nested span for the progress bar effect -->
+                <div id="game-status">
+                    <span>Place your Carrier</span>
+                </div>
                 <button id="mobile-toggle" class="btn btn--secondary hidden">Your Fleet</button>
             </div>
 
