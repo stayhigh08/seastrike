@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SeaStrike - A Solana Game</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Font for the main UI -->
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&display=swap" rel="stylesheet">
+    <!-- NEW: Font for the high-tech buttons -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@500&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="popup-message" class="popup"></div>
+
+    <main id="game-container">
+        <div id="game-core-container">
+            <!-- TOP SECTION -->
+            <div id="top-section">
+                <header id="game-header">
+                    <h1>SeaStrike</h1>
+                    <p class="subtitle">A Solana Game</p>
+                </header>
+                <p id="game-status">Place your Carrier</p>
+                <!-- FIX: Apply the correct button classes for consistent styling -->
+                <button id="mobile-toggle" class="btn btn--secondary hidden">Your Fleet</button>
+            </div>
+
+            <!-- MIDDLE SECTION (Boards) -->
+            <div id="middle-section" class="boards-container">
+                <div class="board" id="player-board-container">
+                    <h2>Your Fleet</h2>
+                    <div id="player-grid" class="grid"></div>
+                </div>
+                <div class="board" id="computer-board-container">
+                    <h2>Enemy Waters</h2>
+                    <div id="computer-grid" class="grid"></div>
+                </div>
+            </div>
+
+            <!-- BOTTOM SECTION (Controls) -->
+            <div id="bottom-section">
+                <div id="ship-selection-container" class="setup-box">
+                    <div id="ship-selection" class="ship-selection"></div>
+                </div>
+                <div id="action-buttons-container" class="setup-box">
+                    <button id="rotate-button" class="btn btn--secondary">Rotate</button>
+                    <button id="start-button" class="btn btn--primary">Start Game</button>
+                </div>
+                <div id="power-ups-container" class="hidden">
+                    <button class="power-up selected" data-ability="torpedo">
+                        <span>Torpedo</span>
+                        <span class="count">∞</span>
+                    </button>
+                    <button class="power-up" data-ability="cluster">
+                        <span>Cluster Bomb</span>
+                        <span class="count" id="cluster-count">2</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="script.js" defer></script>
+</body>
+</html>
