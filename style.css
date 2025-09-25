@@ -45,6 +45,33 @@ body {
     }
 }
 
+#particle-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.solana-flake {
+    position: absolute;
+    top: -10%;
+    background-image: url('solana_logo.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    animation: fall linear infinite;
+}
+
+@keyframes fall {
+    to {
+        transform: translateY(105vh);
+    }
+}
+
+.solana-flake:nth-child(1){width:30px;height:30px;left:5%;animation-duration:10s;animation-delay:-1s;opacity:.3}.solana-flake:nth-child(2){width:45px;height:45px;left:15%;animation-duration:8s;animation-delay:-3s;opacity:.5}.solana-flake:nth-child(3){width:20px;height:20px;left:25%;animation-duration:12s;animation-delay:-5s;opacity:.2}.solana-flake:nth-child(4){width:35px;height:35px;left:35%;animation-duration:7s;animation-delay:-2s;opacity:.4}.solana-flake:nth-child(5){width:50px;height:50px;left:45%;animation-duration:6s;animation-delay:-4s;opacity:.6}.solana-flake:nth-child(6){width:25px;height:25px;left:55%;animation-duration:11s;animation-delay:-1.5s;opacity:.25}.solana-flake:nth-child(7){width:40px;height:40px;left:65%;animation-duration:7.5s;animation-delay:-3.5s;opacity:.45}.solana-flake:nth-child(8){width:60px;height:60px;left:75%;animation-duration:5.5s;animation-delay:-5.5s;opacity:.7}.solana-flake:nth-child(9){width:30px;height:30px;left:85%;animation-duration:9s;animation-delay:-0.5s;opacity:.35}.solana-flake:nth-child(10){width:45px;height:45px;left:95%;animation-duration:6.5s;animation-delay:-2.5s;opacity:.55}.solana-flake:nth-child(11){width:25px;height:25px;left:2%;animation-duration:11.5s;animation-delay:-6s;opacity:.3}.solana-flake:nth-child(12){width:40px;height:40px;left:12%;animation-duration:8.5s;animation-delay:-4.2s;opacity:.45}.solana-flake:nth-child(13){width:25px;height:25px;left:22%;animation-duration:12.5s;animation-delay:-1.8s;opacity:.25}.solana-flake:nth-child(14){width:50px;height:50px;left:32%;animation-duration:6.2s;animation-delay:-3.1s;opacity:.55}.solana-flake:nth-child(15){width:35px;height:35px;left:42%;animation-duration:7.8s;animation-delay:-5.3s;opacity:.4}.solana-flake:nth-child(16){width:55px;height:55px;left:52%;animation-duration:5.8s;animation-delay:-0.9s;opacity:.65}.solana-flake:nth-child(17){width:30px;height:30px;left:62%;animation-duration:9.5s;animation-delay:-4.5s;opacity:.35}.solana-flake:nth-child(18){width:45px;height:45px;left:72%;animation-duration:7.2s;animation-delay:-2.7s;opacity:.5}.solana-flake:nth-child(19){width:65px;height:65px;left:82%;animation-duration:5.2s;animation-delay:-6.5s;opacity:.75}.solana-flake:nth-child(20){width:20px;height:20px;left:92%;animation-duration:13s;animation-delay:-0.3s;opacity:.2}
+
 main#game-container {
     display: flex;
     flex-direction: column;
@@ -56,7 +83,9 @@ main#game-container {
     box-sizing: border-box;
     opacity: 0;
     animation: fadeIn 0.8s ease-out forwards;
-    z-index: 1;
+    /* --- THIS IS THE KEY FIX --- */
+    position: relative; /* Establishes a stacking context */
+    z-index: 1;         /* Ensures this container is on top of the particles */
 }
 
 #game-core-container {
@@ -200,7 +229,7 @@ h1 {
 
 @keyframes bob {
     0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-4px); }
+    50% { transform: translateY(-3px); }
 }
 
 #player-grid .cell.ship-placed {
@@ -208,10 +237,10 @@ h1 {
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
-    animation: bob 3.5s ease-in-out infinite;
+    animation: bob 3s ease-in-out infinite;
 }
-#player-grid .cell.ship-placed:nth-child(even) {
-    animation-delay: -1.75s;
+#player-grid .cell.ship-placed:nth-child(odd) {
+    animation-delay: -1.5s;
 }
 
 #computer-grid .cell.hit {
@@ -229,7 +258,12 @@ h1 {
 }
 #computer-grid .cell.sunk {
     background: url('ship2.png') center/contain no-repeat, var(--sunk-color) !important;
+    animation: bob 3s ease-in-out infinite;
 }
+#computer-grid .cell.sunk:nth-child(odd) {
+    animation-delay: -1.5s;
+}
+
 
 #player-grid .cell.ship-reveal {
     background: url('ship1.png') center/contain no-repeat;
@@ -239,6 +273,7 @@ h1 {
     background: url('ship2.png') center/contain no-repeat;
     opacity: 0.5;
 }
+
 
 .cell.sunk::after {
     content: '✖';
@@ -298,10 +333,9 @@ h1 {
     width: 100%;
 }
 
-/* --- THIS IS THE KEY FIX --- */
 .secondary-actions {
     display: flex;
-    flex-direction: row; /* Side-by-side by default */
+    flex-direction: row;
     gap: 0.75rem;
     width: 100%;
 }
@@ -310,8 +344,8 @@ h1 {
     flex-grow: 1;
     text-decoration: none;
     text-align: center;
-    line-height: 1.5; /* Ensures vertical centering */
-    box-sizing: border-box; /* Ensures consistent sizing */
+    line-height: 1.5;
+    box-sizing: border-box;
 }
 
 .ship-selection {
@@ -434,7 +468,7 @@ body.view-override.gamestate-player_turn #computer-board-container { display: no
 body.view-override.gamestate-computer_turn #player-board-container { display: none; }
 body.view-override.gamestate-computer_turn #computer-board-container { display: flex; }
 
-@media (min-width: 1201px) {
+@media (min-width: 901px) {
     :root {
         --cell-size: clamp(30px, 4.5vmin, 50px);
     }
@@ -477,7 +511,7 @@ body.view-override.gamestate-computer_turn #computer-board-container { display: 
     }
     
     #action-buttons-container {
-        order: 1; /* Ensure start game is after ship selection */
+        order: 1;
         flex-direction: row;
         align-items: center;
         gap: 0.75rem;
@@ -577,9 +611,18 @@ body.view-override.gamestate-computer_turn #computer-board-container { display: 
         max-width: 275px;
     }
 
-    /* --- THIS IS THE KEY FIX --- */
     .secondary-actions {
-        flex-direction: column; /* Stack on very narrow screens */
+        flex-direction: column;
+    }
+}
+
+@media (min-height: 1000px) and (max-width: 1400px) {
+    #player-board-container {
+        transform: scale(0.9);
+    }
+
+    #computer-board-container {
+        transform: scale(0.9);
     }
 }
 
