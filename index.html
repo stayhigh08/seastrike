@@ -14,7 +14,6 @@
 </head>
 <body>
 
-    <!-- MODIFICATION: Container for the new Solana logo particle effect -->
     <div id="particle-container">
         <div class="solana-flake"></div><div class="solana-flake"></div><div class="solana-flake"></div><div class="solana-flake"></div><div class="solana-flake"></div><div class="solana-flake"></div><div class="solana-flake"></div><div class="solana-flake"></div><div class="solana-flake"></div><div class="solana-flake"></div>
         <div class="solana-flake"></div><div class="solana-flake"></div><div class="solana-flake"></div><div class="solana-flake"></div><div class="solana-flake"></div><div class="solana-flake"></div><div class="solana-flake"></div><div class="solana-flake"></div><div class="solana-flake"></div><div class="solana-flake"></div>
@@ -53,8 +52,13 @@
                 <div id="ship-selection-container" class="setup-box">
                     <div id="ship-selection" class="ship-selection"></div>
                 </div>
+                <!-- MODIFICATION: Reworked button container for better layout -->
                 <div id="action-buttons-container" class="setup-box">
-                    <button id="rotate-button" class="btn btn--secondary">Rotate</button>
+                    <div class="secondary-actions">
+                        <button id="rotate-button" class="btn btn--secondary">Rotate</button>
+                        <!-- Remember to change this href to your actual multiplayer link -->
+                        <a href="multiplayer.html" id="multiplayer-button" class="btn btn--secondary">Multiplayer</a>
+                    </div>
                     <button id="start-button" class="btn btn--primary">Start Game</button>
                 </div>
                 <div id="power-ups-container" class="hidden">
