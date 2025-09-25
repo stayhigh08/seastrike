@@ -434,7 +434,7 @@ body.view-override.gamestate-player_turn #computer-board-container { display: no
 body.view-override.gamestate-computer_turn #player-board-container { display: none; }
 body.view-override.gamestate-computer_turn #computer-board-container { display: flex; }
 
-@media (min-width: 901px) {
+@media (min-width: 1201px) {
     :root {
         --cell-size: clamp(30px, 4.5vmin, 50px);
     }
