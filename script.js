@@ -18,9 +18,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const gridSize = 10;
     const shipTemplates = [{ name: 'carrier', size: 5 }, { name: 'battleship', size: 4 }, { name: 'cruiser', size: 3 }, { name: 'destroyer', size: 2 }];
     
-    // --- MODIFICATION: New calculation based on "empty water" squares ---
-    const totalShipSquares = shipTemplates.reduce((sum, ship) => sum + ship.size, 0) * 2; // 28
-    const totalWaterSquares = (gridSize * gridSize * 2) - totalShipSquares; // 200 - 28 = 172
+    const totalShipSquares = shipTemplates.reduce((sum, ship) => sum + ship.size, 0) * 2;
+    const totalWaterSquares = (gridSize * gridSize * 2) - totalShipSquares;
     
     let gameState = 'SETUP', orientation = 'horizontal', selectedShip = null, playerShips = [], computerShips = [];
     
@@ -32,12 +31,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
     let isPlayerAttacking = false;
 
-    // --- MODIFICATION: Updated progress bar logic to count only misses ---
     function updateGameProgress() {
-        // Count only the cells that are misses in the water
-        const missedCells = document.querySelectorAll('.grid .miss').length;
-        // The progress is how much of the "empty sea" has been revealed
-        const progressPercentage = (missedCells / totalWaterSquares) * 100;
+        const hitCells = document.querySelectorAll('.grid .hit').length;
+        const progressPercentage = (hitCells / totalShipSquares) * 100;
         gameStatus.style.setProperty('--progress-width', `${progressPercentage}%`);
     }
 
@@ -269,7 +265,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (sunkShip) {
                 gameStatusText.textContent = `You sunk their ${sunkShip.name}!`;
                 animateSinking(sunkShip, computerGrid);
-                if (checkWinCondition(playerShips, computerShips)) return;
+                if (checkWinCondition()) return;
                 switchTurn(3500);
             } else {
                 gameStatusText.textContent = 'Go again!';
@@ -308,7 +304,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         setTimeout(() => {
             updateGameProgress();
-            if (checkWinCondition(playerShips, computerShips)) return;
+            if (checkWinCondition()) return;
             if (anyHit) {
                 gameStatusText.textContent = 'Cluster bomb hit! Go again.';
                 isPlayerAttacking = false;
@@ -359,7 +355,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 aiTargetQueue = [];
                 aiKnownHits = [];
                 animateSinking(sunkShip, playerGrid);
-                if (checkWinCondition(computerShips, playerShips)) return;
+                if (checkWinCondition()) return;
                 switchTurn(3500);
             } else {
                 gameStatusText.textContent = "Computer hit! It goes again.";
@@ -431,7 +427,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         setTimeout(() => {
             updateGameProgress();
-            if (checkWinCondition(computerShips, playerShips)) return;
+            if (checkWinCondition()) return;
             
             if (shipWasSunkDuringCluster) {
                 gameStatusText.textContent = `Computer sunk your ship! It goes again.`;
@@ -491,12 +487,29 @@ document.addEventListener('DOMContentLoaded', () => {
         return { hit, sunkShip };
     }
 
-    function checkWinCondition(attackingFleet, defendingFleet) {
-        const allSunk = defendingFleet.every(ship => ship.hits.length === ship.cells.length);
-        if (allSunk) {
+    // --- MODIFICATION: This function now reveals the loser's ships ---
+    function checkWinCondition() {
+        const playerWon = computerShips.every(ship => ship.hits.length === ship.cells.length);
+        const computerWon = playerShips.every(ship => ship.hits.length === ship.cells.length);
+
+        if (playerWon || computerWon) {
             setGameState('GAMEOVER');
-            const winner = attackingFleet === playerShips ? 'You' : 'The Computer';
+            const winner = playerWon ? 'You' : 'The Computer';
             gameStatusText.textContent = `GAME OVER! ${winner} Win!`;
+
+            // Reveal the losing fleet's remaining ships
+            const losingFleet = playerWon ? computerShips : playerShips;
+            const losingGrid = playerWon ? computerGrid : playerGrid;
+            
+            losingFleet.forEach(ship => {
+                ship.cells.forEach(cellId => {
+                    if (!ship.hits.includes(cellId)) {
+                        const cell = losingGrid.querySelector(`[data-id='${cellId}']`);
+                        if (cell) cell.classList.add('ship-reveal');
+                    }
+                });
+            });
+
             updateToggleButton();
             return true;
         }
