@@ -6,7 +6,7 @@
     --dot-color: rgba(255, 255, 255, 0.1);
     --attention-color: #FF4500;
     --go-color: #39FF14;
-    --ship-color: #4169E1; /* This will now be a fallback */
+    --ship-color: #4169E1;
     --hit-color: #FF4500;
     --miss-color: #457b9d;
     --sunk-color: #8B0000;
@@ -44,6 +44,34 @@ body {
         background-position: 0 -120px;
     }
 }
+
+#snow-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 100;
+}
+
+.snowflake {
+    position: absolute;
+    top: -10%;
+    background: white;
+    border-radius: 50%;
+    opacity: 0.4;
+    animation: fall linear infinite;
+}
+
+@keyframes fall {
+    to {
+        transform: translateY(105vh);
+    }
+}
+
+/* --- MODIFICATION: Snowflakes are now smaller (medium size) --- */
+.snowflake:nth-child(1){width:2px;height:2px;left:10%;animation-duration:8s;animation-delay:0s}.snowflake:nth-child(2){width:3px;height:3px;left:20%;animation-duration:5s;animation-delay:-1s}.snowflake:nth-child(3){width:2px;height:2px;left:30%;animation-duration:9s;animation-delay:-2s}.snowflake:nth-child(4){width:3px;height:3px;left:40%;animation-duration:6s;animation-delay:-4s}.snowflake:nth-child(5){width:4px;height:4px;left:50%;animation-duration:4.5s;animation-delay:-1.5s}.snowflake:nth-child(6){width:2px;height:2px;left:60%;animation-duration:10s;animation-delay:-3s}.snowflake:nth-child(7){width:3px;height:3px;left:70%;animation-duration:5.5s;animation-delay:-0.5s}.snowflake:nth-child(8){width:4px;height:4px;left:80%;animation-duration:4s;animation-delay:-5s}.snowflake:nth-child(9){width:2px;height:2px;left:90%;animation-duration:8.5s;animation-delay:-2.5s}.snowflake:nth-child(10){width:3px;height:3px;left:95%;animation-duration:6.5s;animation-delay:-3.5s}.snowflake:nth-child(11){width:2px;height:2px;left:5%;animation-duration:9.5s;animation-delay:-1.2s}.snowflake:nth-child(12){width:4px;height:4px;left:15%;animation-duration:4.2s;animation-delay:-5.2s}.snowflake:nth-child(13){width:3px;height:3px;left:25%;animation-duration:7.8s;animation-delay:-3.8s}.snowflake:nth-child(14){width:2px;height:2px;left:35%;animation-duration:8.2s;animation-delay:-2.1s}.snowflake:nth-child(15){width:4px;height:4px;left:45%;animation-duration:4.1s;animation-delay:-6.1s}.snowflake:nth-child(16){width:3px;height:3px;left:55%;animation-duration:6.8s;animation-delay:-0.8s}.snowflake:nth-child(17){width:2px;height:2px;left:65%;animation-duration:10.5s;animation-delay:-4.5s}.snowflake:nth-child(18){width:4px;height:4px;left:75%;animation-duration:4.6s;animation-delay:-1.6s}.snowflake:nth-child(19){width:2px;height:2px;left:85%;animation-duration:9.2s;animation-delay:-3.2s}.snowflake:nth-child(20){width:3px;height:3px;left:92%;animation-duration:7.2s;animation-delay:-5.8s}.snowflake:nth-child(21){width:4px;height:4px;left:8%;animation-duration:4.8s;animation-delay:-0.4s}.snowflake:nth-child(22){width:2px;height:2px;left:18%;animation-duration:8.8s;animation-delay:-2.8s}.snowflake:nth-child(23){width:3px;height:3px;left:28%;animation-duration:6.4s;animation-delay:-4.2s}.snowflake:nth-child(24){width:4px;height:4px;left:38%;animation-duration:4.4s;animation-delay:-1.4s}.snowflake:nth-child(25){width:2px;height:2px;left:48%;animation-duration:9.8s;animation-delay:-3.6s}.snowflake:nth-child(26){width:3px;height:3px;left:58%;animation-duration:7.4s;animation-delay:-5.4s}.snowflake:nth-child(27){width:4px;height:4px;left:68%;animation-duration:4.0s;animation-delay:-0.2s}.snowflake:nth-child(28){width:2px;height:2px;left:78%;animation-duration:11s;animation-delay:-2.2s}.snowflake:nth-child(29){width:3px;height:3px;left:88%;animation-duration:6.6s;animation-delay:-4.8s}.snowflake:nth-child(30){width:2px;height:2px;left:98%;animation-duration:8.6s;animation-delay:-1.9s}
 
 main#game-container {
     display: flex;
@@ -197,7 +225,6 @@ h1 {
 #computer-grid .cell:hover:not(.hover-invalid):not(.hover-cluster) { background-color: var(--primary-purple); }
 .cell.hit::before, .cell.miss::before, .cell.sunk::before, .cell.ship-placed::before { background-color: transparent; }
 
-/* --- MODIFICATION: Ship Image Styling --- */
 #player-grid .cell.ship-placed {
     background-color: transparent;
     background-image: url('ship1.png');
@@ -517,7 +544,6 @@ body.view-override.gamestate-computer_turn #computer-board-container { display: 
         max-width: 275px;
     }
 }
-
 
 /* Abridged styles for brevity */
 .popup{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(.5);font-size:clamp(4rem,15vw,8rem);font-weight:800;color:#fff;text-shadow:0 0 20px rgba(0,0,0,.5);pointer-events:none;opacity:0;z-index:1000}.popup.show{animation:popup-effect 1.2s ease-out forwards}@keyframes fadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}@keyframes shake{0%,100%{transform:translateX(0)}10%,30%,50%{transform:translateX(-5px)}20%,40%,60%{transform:translateX(5px)}}@keyframes explosion{0%{transform:scale(1)}50%{transform:scale(1.8);background-color:orangered}100%{transform:scale(0)}}@keyframes popup-effect{0%,100%{opacity:0;transform:translate(-50%,-50%) scale(.5)}20%,80%{opacity:1;transform:translate(-50%,-50%) scale(1)}}.shake{animation:shake .4s}.explode{animation:explosion .5s ease-out forwards}
