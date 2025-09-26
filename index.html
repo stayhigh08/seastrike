@@ -15,8 +15,26 @@
 <body>
 
     <div id="particle-container">
-        <div class="solana-flake"></div><div class="solana-flake"></div><div class="solana-flake"></div><div class="solana-flake"></div><div class="solana-flake"></div><div class="solana-flake"></div><div class="solana-flake"></div><div class="solana-flake"></div><div class="solana-flake"></div><div class="solana-flake"></div>
-        <div class="solana-flake"></div><div class="solana-flake"></div><div class="solana-flake"></div><div class="solana-flake"></div><div class="solana-flake"></div><div class="solana-flake"></div><div class="solana-flake"></div><div class="solana-flake"></div><div class="solana-flake"></div><div class="solana-flake"></div>
+        <div class="solana-flake"></div>
+        <div class="solana-flake"></div>
+        <div class="solana-flake"></div>
+        <div class="solana-flake"></div>
+        <div class="solana-flake"></div>
+        <div class="solana-flake"></div>
+        <div class="solana-flake"></div>
+        <div class="solana-flake"></div>
+        <div class="solana-flake"></div>
+        <div class="solana-flake"></div>
+        <div class="solana-flake"></div>
+        <div class="solana-flake"></div>
+        <div class="solana-flake"></div>
+        <div class="solana-flake"></div>
+        <div class="solana-flake"></div>
+        <div class="solana-flake"></div>
+        <div class="solana-flake"></div>
+        <div class="solana-flake"></div>
+        <div class="solana-flake"></div>
+        <div class="solana-flake"></div>
     </div>
 
     <div id="popup-message" class="popup"></div>
@@ -50,14 +68,19 @@
             <!-- BOTTOM SECTION (Controls) -->
             <div id="bottom-section">
                 <div id="ship-selection-container" class="setup-box">
-                    <div id="ship-selection" class="ship-selection"></div>
+                    <div id="ship-selection">
+                        <div class="ship" data-name="carrier" data-size="5"></div>
+                        <div class="ship" data-name="battleship" data-size="4"></div>
+                        <div class="ship" data-name="cruiser" data-size="3"></div>
+                        <div class="ship" data-name="cruiser-2" data-size="3"></div>
+                        <div class="ship" data-name="destroyer" data-size="2"></div>
+                        <div class="ship" data-name="destroyer-2" data-size="2"></div>
+                    </div>
                 </div>
-                <!-- MODIFICATION: Reworked button container for better layout -->
                 <div id="action-buttons-container" class="setup-box">
                     <div class="secondary-actions">
                         <button id="rotate-button" class="btn btn--secondary">Rotate</button>
-                        <!-- Remember to change this href to your actual multiplayer link -->
-                        <a href="multiplayer.html" id="multiplayer-button" class="btn btn--secondary">Multiplayer</a>
+                        <a href="#" class="btn btn--secondary">Multiplayer</a>
                     </div>
                     <button id="start-button" class="btn btn--primary">Start Game</button>
                 </div>
@@ -68,7 +91,7 @@
                     </button>
                     <button class="power-up" data-ability="cluster">
                         <span>Cluster Bomb</span>
-                        <span class="count" id="cluster-count">2</span>
+                        <span class="count" id="cluster-count">3</span>
                     </button>
                 </div>
             </div>
