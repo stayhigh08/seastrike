@@ -7,11 +7,10 @@
     --attention-color: #FF4500;
     --go-color: #39FF14;
     --ship-color: #4169E1;
-    --hit-color: #FF4500;
+    --hit-color-light: #FF7F7F; /* MODIFICATION: Light red for hits */
+    --sunk-color: #8B0000;      /* MODIFICATION: Dark red for sunk ships */
     --miss-color: #457b9d;
-    --sunk-color: #8B0000;
-    --enemy-waters-color: #191970;
-    --cell-size: clamp(24px, 8vw, 45px); 
+    --cell-size: clamp(25px, 8vw, 45px);
 }
 
 html, body {
@@ -83,9 +82,8 @@ main#game-container {
     box-sizing: border-box;
     opacity: 0;
     animation: fadeIn 0.8s ease-out forwards;
-    /* --- THIS IS THE KEY FIX --- */
-    position: relative; /* Establishes a stacking context */
-    z-index: 1;         /* Ensures this container is on top of the particles */
+    position: relative;
+    z-index: 1;
 }
 
 #game-core-container {
@@ -93,9 +91,9 @@ main#game-container {
     flex-direction: column;
     justify-content: flex-start; 
     align-items: center;
-    gap: clamp(1rem, 3vh, 1.5rem); 
+    gap: clamp(1rem, 1.5rem, 1.5rem); 
     width: 100%;
-    padding-top: 3vh;
+    padding-top: 1.5rem;
     box-sizing: border-box;
 }
 
@@ -147,6 +145,42 @@ h1 {
     margin-right: auto;
     animation: pulseGlowStatus 3s ease-in-out infinite;
 }
+
+#enemy-ships-tracker {
+    margin-top: 1rem;
+}
+#enemy-ships-tracker h3 {
+    margin: 0 0 0.5rem 0;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    color: var(--primary-purple);
+    letter-spacing: 1px;
+    opacity: 0.7;
+}
+#enemy-ship-list {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+.enemy-ship-indicator {
+    display: flex;
+    gap: 2px;
+    transition: opacity 0.5s ease;
+}
+.enemy-ship-indicator.sunk {
+    opacity: 0.2;
+    text-decoration: line-through;
+}
+.enemy-ship-segment {
+    width: 15px;
+    height: 15px;
+    background-color: #191970; /* --enemy-waters-color */
+    border: 1px solid var(--primary-purple);
+    border-radius: 2px;
+}
+
 
 @keyframes pulseGlowStatus {
     0%, 100% {
@@ -200,22 +234,28 @@ h1 {
     align-items: center;
 }
 
+#computer-board-container {
+    position: relative;
+}
+
 .board h2 { display: none; }
 
 .grid {
     display: grid;
-    grid-template-columns: repeat(10, var(--cell-size));
-    grid-template-rows: repeat(10, var(--cell-size));
+    grid-template-columns: repeat(9, var(--cell-size));
+    grid-template-rows: repeat(9, var(--cell-size));
     gap: 2px; 
     padding: 8px; 
-    --cell-size: clamp(35px, 3.5vh, 30px);
     border-radius: 12px;
     border: 3px solid rgba(255,255,255,0.2);
     box-shadow: 0 10px 30px rgba(0,0,0,0.2);
     background-color: var(--card-black);
 }
 
-#computer-grid { border-color: var(--enemy-waters-color); }
+/* MODIFICATION: Opponent fleet border color changed to red */
+#computer-grid { 
+    border-color: var(--attention-color); 
+}
 
 .cell { border-radius: 4px; position: relative; overflow: hidden; }
 .cell::before {
@@ -244,13 +284,14 @@ h1 {
     animation-delay: -1.5s;
 }
 
+/* MODIFICATION: Hit and Sunk color changes */
 #computer-grid .cell.hit {
-    background: url('ship2.png') center/contain no-repeat, var(--hit-color);
+    background: url('ship2.png') center/contain no-repeat, var(--hit-color-light);
 }
 #computer-grid .cell.miss { background-color: var(--miss-color); }
 
 #player-grid .cell.hit {
-    background: url('ship1.png') center/contain no-repeat, white;
+    background: url('ship1.png') center/contain no-repeat, var(--hit-color-light);
 }
 #player-grid .cell.miss { background-color: rgba(255, 255, 255, 0.5); }
 
@@ -265,7 +306,6 @@ h1 {
     animation-delay: -1.5s;
 }
 
-
 #player-grid .cell.ship-reveal {
     background: url('ship1.png') center/contain no-repeat;
     opacity: 0.5;
@@ -275,6 +315,11 @@ h1 {
     opacity: 0.5;
 }
 
+#computer-grid .cell.hit,
+#computer-grid .cell.sunk,
+#computer-grid .cell.ship-reveal {
+    filter: hue-rotate(180deg);
+}
 
 .cell.sunk::after {
     content: '✖';
@@ -301,6 +346,61 @@ h1 {
     border-radius: 50%;
     animation: explosion 0.5s ease-out forwards;
     z-index: 3;
+}
+
+.cell.radar-reveal {
+    animation: radar-pulse 2s ease-out;
+}
+@keyframes radar-pulse {
+    0% { box-shadow: inset 0 0 0 0 rgba(0, 191, 255, 0.7); }
+    50% { box-shadow: inset 0 0 25px 5px rgba(0, 191, 255, 0.7); }
+    100% { box-shadow: inset 0 0 0 0 rgba(0, 191, 255, 0.7); }
+}
+
+/* --- MODIFICATION: New Radar Sweep Effect --- */
+.radar-sweep {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: calc(9 * var(--cell-size) + 16px + 4px); /* Match grid size */
+    height: calc(9 * var(--cell-size) + 16px + 4px);
+    border-radius: 50%;
+    pointer-events: none;
+    overflow: hidden;
+    opacity: 0;
+    z-index: 5;
+    transition: opacity 0.3s ease-out;
+}
+.radar-sweep.active {
+    opacity: 1;
+}
+.radar-sweep::before { /* Static radar grid lines */
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background:
+        /* Crosshairs */
+        linear-gradient(to right, transparent 49.5%, rgba(57, 255, 20, 0.3) 49.5% 50.5%, transparent 50.5%),
+        linear-gradient(to bottom, transparent 49.5%, rgba(57, 255, 20, 0.3) 49.5% 50.5%, transparent 50.5%),
+        /* Concentric circles */
+        radial-gradient(circle, transparent 25%, rgba(57, 255, 20, 0.3) 25% 25.5%, transparent 25.5%),
+        radial-gradient(circle, transparent 50%, rgba(57, 255, 20, 0.3) 50% 50.5%, transparent 50.5%),
+        radial-gradient(circle, transparent 75%, rgba(57, 255, 20, 0.3) 75% 75.5%, transparent 75.5%);
+}
+.radar-sweep::after { /* Animated sweep */
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: conic-gradient(from 0deg, transparent 0deg 270deg, rgba(57, 255, 20, 0.4) 350deg, transparent 360deg);
+    animation: radar-sweep-animation 2s linear;
+}
+@keyframes radar-sweep-animation {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 }
 
 @keyframes explosion {
@@ -336,7 +436,7 @@ h1 {
 
 .secondary-actions {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     gap: 0.75rem;
     width: 100%;
 }
@@ -349,23 +449,38 @@ h1 {
     box-sizing: border-box;
 }
 
-#ship-selection {
+.ship-selection {
     display: flex;
     flex-wrap: wrap;
-    gap: 1rem;
+    gap: 8px;
     justify-content: center;
     align-items: center;
+}
+#ship-selection:empty {
+    display: none;
 }
 
 .ship {
     padding: 6px; border: 2px solid rgba(255,255,255,0.2);
     border-radius: 8px; cursor: pointer; display: flex;
     gap: 1.8px; background-color: #1A1A1A;
+    transition: border-color 0.3s ease, opacity 0.3s ease;
 }
 .ship:hover, .ship.selected { border-color: var(--primary-purple); }
+
+.ship.placed {
+    opacity: 0.3;
+    cursor: default;
+    pointer-events: none;
+}
+
+.ship.vertical {
+    flex-direction: column;
+}
+
 .ship-segment { 
-    width: clamp(18px, 5vw, 28px);
-    height: clamp(18px, 5vw, 28px); 
+    width: clamp(16px, 4vw, 22px);
+    height: clamp(16px, 4vw, 22px); 
     background-color: var(--ship-color); 
     border-radius: 3px; 
 }
@@ -387,23 +502,6 @@ h1 {
 .btn--primary:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
 .btn--secondary { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,0.3); }
 .btn--secondary:hover { transform: translateY(-3px); }
-
-/* MODIFICATION: New animation and rule for the start button */
-@keyframes pulseGlowStart {
-    0%, 100% {
-        transform: scale(1);
-        box-shadow: 0 0 15px -5px var(--attention-color);
-    }
-    50% {
-        transform: scale(1.03);
-        box-shadow: 0 0 25px 0px var(--attention-color);
-    }
-}
-
-#start-button.ready-to-start {
-    animation: pulseGlowStart 2s ease-in-out infinite;
-}
-
 
 #power-ups-container { 
     display: flex; 
@@ -482,7 +580,7 @@ body.view-override.gamestate-computer_turn #computer-board-container { display: 
 
 @media (min-width: 901px) {
     :root {
-        --cell-size: clamp(30px, 4.5vmin, 50px);
+        --cell-size: clamp(35px, 4.5vmin, 55px);
     }
     
     body {
@@ -509,9 +607,9 @@ body.view-override.gamestate-computer_turn #computer-board-container { display: 
     
     #bottom-section {
         flex-direction: row;
-        flex-wrap: wrap;
-        justify-content: center;
         width: auto;
+        background-color: rgba(26, 26, 26, 0.7);
+        border: 1px solid rgba(147, 112, 219, 0.1);
         border-radius: 12px;
         padding: 0.6rem 0.8rem;
         gap: 1rem;
@@ -531,11 +629,10 @@ body.view-override.gamestate-computer_turn #computer-board-container { display: 
     
     .secondary-actions {
         order: -1;
-        flex-direction: row;
     }
 
-    #ship-selection {
-        flex-wrap: nowrap;
+    .ship-selection {
+        display: flex; 
         gap: 0.5rem;
     }
     
@@ -599,7 +696,7 @@ body.view-override.gamestate-computer_turn #computer-board-container { display: 
 
 @media (min-width: 901px) and (max-height: 850px) {
     :root {
-        --cell-size: clamp(22px, 3.5vh, 30px);
+        --cell-size: clamp(28px, 4vh, 35px);
     }
     
     body {
@@ -623,6 +720,10 @@ body.view-override.gamestate-computer_turn #computer-board-container { display: 
         transform: scale(1, 1);
         max-width: 275px;
     }
+
+    .secondary-actions {
+        flex-direction: column;
+    }
 }
 
 @media (min-height: 1000px) and (max-width: 1400px) {
@@ -635,13 +736,4 @@ body.view-override.gamestate-computer_turn #computer-board-container { display: 
     }
 }
 
-@media (min-height: 812px) and (max-width: 430px) {
-    
-    .grid {
-        --cell-size: clamp(22px, 3.5vh, 30px);
-    }
-    
-}
-
-/* Abridged styles for brevity */
 .popup{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(.5);font-size:clamp(4rem,15vw,8rem);font-weight:800;color:#fff;text-shadow:0 0 20px rgba(0,0,0,.5);pointer-events:none;opacity:0;z-index:1000}.popup.show{animation:popup-effect 1.2s ease-out forwards}@keyframes fadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}@keyframes shake{0%,100%{transform:translateX(0)}10%,30%,50%{transform:translateX(-5px)}20%,40%,60%{transform:translateX(5px)}}@keyframes popup-effect{0%,100%{opacity:0;transform:translate(-50%,-50%) scale(.5)}20%,80%{opacity:1;transform:translate(-50%,-50%) scale(1)}}.shake{animation:shake .4s}
