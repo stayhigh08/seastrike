@@ -4,11 +4,9 @@
     --card-black: #1A1A1A;
     --grid-color: rgba(147, 112, 219, 0.05);
     --dot-color: rgba(255, 255, 255, 0.1);
-    --attention-color: #FF4500;
-    --go-color: #39FF14;
     --ship-color: #4169E1;
-    --hit-color-light: #FF7F7F; /* MODIFICATION: Light red for hits */
-    --sunk-color: #8B0000;      /* MODIFICATION: Dark red for sunk ships */
+    --hit-color-light: #FF7F7F; 
+    --sunk-color: #8B0000;      
     --miss-color: #457b9d;
     --cell-size: clamp(25px, 8vw, 45px);
 }
@@ -104,11 +102,11 @@ main#game-container {
 }
 
 @keyframes auroraGlow {
-    0%   { text-shadow: 0 0 20px rgba(147, 112, 219, 0.7); }
-    25%  { text-shadow: 0 0 30px rgba(0, 191, 255, 0.7); }
-    50%  { text-shadow: 0 0 20px rgba(57, 255, 20, 0.7); }
-    75%  { text-shadow: 0 0 30px rgba(0, 191, 255, 0.7); }
-    100% { text-shadow: 0 0 20px rgba(147, 112, 219, 0.7); }
+    0%   { text-shadow: 0 0 20px rgba(153, 69, 255, 0.8), 0 0 30px rgba(153, 69, 255, 0.6); }
+    25%  { text-shadow: 0 0 25px rgba(20, 241, 149, 0.8), 0 0 35px rgba(20, 241, 149, 0.6); }
+    50%  { text-shadow: 0 0 20px rgba(0, 191, 255, 0.8), 0 0 30px rgba(0, 191, 255, 0.6); }
+    75%  { text-shadow: 0 0 25px rgba(20, 241, 149, 0.8), 0 0 35px rgba(20, 241, 149, 0.6); }
+    100% { text-shadow: 0 0 20px rgba(153, 69, 255, 0.8), 0 0 30px rgba(153, 69, 255, 0.6); }
 }
 
 h1 { 
@@ -118,7 +116,7 @@ h1 {
     color: white;
     letter-spacing: 4px;
     text-transform: uppercase;
-    animation: auroraGlow 5s ease-in-out infinite;
+    animation: auroraGlow 6s ease-in-out infinite;
 }
 
 .subtitle {
@@ -133,17 +131,21 @@ h1 {
 #game-status {
     position: relative;
     background-color: var(--card-black);
-    border: 1px solid var(--go-color);
-    padding: 0.5rem 1.5rem;
+    border: 1px solid var(--primary-purple);
     border-radius: 50px;
     margin-top: 1rem;
     text-align: center;
     overflow: hidden;
-    width: 100%;
-    max-width: 450px;
     margin-left: auto;
     margin-right: auto;
     animation: pulseGlowStatus 3s ease-in-out infinite;
+    width: clamp(300px, 90%, 450px);
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 1.5rem;
+    box-sizing: border-box;
 }
 
 #enemy-ships-tracker {
@@ -176,18 +178,17 @@ h1 {
 .enemy-ship-segment {
     width: 15px;
     height: 15px;
-    background-color: #191970; /* --enemy-waters-color */
+    background-color: #191970;
     border: 1px solid var(--primary-purple);
     border-radius: 2px;
 }
 
-
 @keyframes pulseGlowStatus {
     0%, 100% {
-        box-shadow: 0 0 10px -2px var(--go-color);
+        box-shadow: 0 0 10px -2px var(--primary-purple);
     }
     50% {
-        box-shadow: 0 0 15px 0px var(--go-color);
+        box-shadow: 0 0 15px 0px var(--primary-purple);
     }
 }
 
@@ -198,19 +199,19 @@ h1 {
     left: 0;
     height: 100%;
     width: var(--progress-width, 0%);
-    background-color: rgba(57, 255, 20, 0.3);
+    background-color: rgba(147, 112, 219, 0.3);
     transition: width 0.5s ease-in-out;
 }
 
 #game-status span {
     position: relative;
     z-index: 1;
-    color: var(--go-color);
+    color: var(--primary-purple);
     font-family: 'Roboto Mono', sans-serif;
     font-size: clamp(0.8rem, 3vw, 1rem);
     text-transform: uppercase;
     letter-spacing: 1.5px;
-    text-shadow: 0 0 8px rgba(57, 255, 20, 0.5);
+    text-shadow: 0 0 8px rgba(147, 112, 219, 0.5);
 }
 
 
@@ -252,9 +253,8 @@ h1 {
     background-color: var(--card-black);
 }
 
-/* MODIFICATION: Opponent fleet border color changed to red */
 #computer-grid { 
-    border-color: var(--attention-color); 
+    border: 1px solid var(--primary-purple); 
 }
 
 .cell { border-radius: 4px; position: relative; overflow: hidden; }
@@ -268,23 +268,13 @@ h1 {
 #computer-grid .cell:hover:not(.hover-invalid):not(.hover-cluster) { background-color: var(--primary-purple); }
 .cell.hit::before, .cell.miss::before, .cell.sunk::before, .cell.ship-placed::before { background-color: transparent; }
 
-@keyframes bob {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-3px); }
-}
-
 #player-grid .cell.ship-placed {
     background-image: url('ship1.png');
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
-    animation: bob 3s ease-in-out infinite;
-}
-#player-grid .cell.ship-placed:nth-child(odd) {
-    animation-delay: -1.5s;
 }
 
-/* MODIFICATION: Hit and Sunk color changes */
 #computer-grid .cell.hit {
     background: url('ship2.png') center/contain no-repeat, var(--hit-color-light);
 }
@@ -300,10 +290,6 @@ h1 {
 }
 #computer-grid .cell.sunk {
     background: url('ship2.png') center/contain no-repeat, var(--sunk-color) !important;
-    animation: bob 3s ease-in-out infinite;
-}
-#computer-grid .cell.sunk:nth-child(odd) {
-    animation-delay: -1.5s;
 }
 
 #player-grid .cell.ship-reveal {
@@ -357,12 +343,11 @@ h1 {
     100% { box-shadow: inset 0 0 0 0 rgba(0, 191, 255, 0.7); }
 }
 
-/* --- MODIFICATION: New Radar Sweep Effect --- */
 .radar-sweep {
     position: absolute;
     top: 50%; left: 50%;
     transform: translate(-50%, -50%);
-    width: calc(9 * var(--cell-size) + 16px + 4px); /* Match grid size */
+    width: calc(9 * var(--cell-size) + 16px + 4px);
     height: calc(9 * var(--cell-size) + 16px + 4px);
     border-radius: 50%;
     pointer-events: none;
@@ -374,28 +359,26 @@ h1 {
 .radar-sweep.active {
     opacity: 1;
 }
-.radar-sweep::before { /* Static radar grid lines */
+.radar-sweep::before {
     content: '';
     position: absolute;
     top: 0; left: 0;
     width: 100%; height: 100%;
     background:
-        /* Crosshairs */
-        linear-gradient(to right, transparent 49.5%, rgba(57, 255, 20, 0.3) 49.5% 50.5%, transparent 50.5%),
-        linear-gradient(to bottom, transparent 49.5%, rgba(57, 255, 20, 0.3) 49.5% 50.5%, transparent 50.5%),
-        /* Concentric circles */
-        radial-gradient(circle, transparent 25%, rgba(57, 255, 20, 0.3) 25% 25.5%, transparent 25.5%),
-        radial-gradient(circle, transparent 50%, rgba(57, 255, 20, 0.3) 50% 50.5%, transparent 50.5%),
-        radial-gradient(circle, transparent 75%, rgba(57, 255, 20, 0.3) 75% 75.5%, transparent 75.5%);
+        linear-gradient(to right, transparent 49.5%, rgba(147, 112, 219, 0.3) 49.5% 50.5%, transparent 50.5%),
+        linear-gradient(to bottom, transparent 49.5%, rgba(147, 112, 219, 0.3) 49.5% 50.5%, transparent 50.5%),
+        radial-gradient(circle, transparent 25%, rgba(147, 112, 219, 0.3) 25% 25.5%, transparent 25.5%),
+        radial-gradient(circle, transparent 50%, rgba(147, 112, 219, 0.3) 50% 50.5%, transparent 50.5%),
+        radial-gradient(circle, transparent 75%, rgba(147, 112, 219, 0.3) 75% 75.5%, transparent 75.5%);
 }
-.radar-sweep::after { /* Animated sweep */
+.radar-sweep::after {
     content: '';
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: conic-gradient(from 0deg, transparent 0deg 270deg, rgba(57, 255, 20, 0.4) 350deg, transparent 360deg);
+    background: conic-gradient(from 0deg, transparent 0deg 270deg, rgba(147, 112, 219, 0.4) 350deg, transparent 360deg);
     animation: radar-sweep-animation 2s linear;
 }
 @keyframes radar-sweep-animation {
@@ -481,7 +464,7 @@ h1 {
 .ship-segment { 
     width: clamp(16px, 4vw, 22px);
     height: clamp(16px, 4vw, 22px); 
-    background-color: var(--ship-color); 
+    background-color: var(--primary-purple); 
     border-radius: 3px; 
 }
 
@@ -498,7 +481,8 @@ h1 {
     max-width: 400px;
     transition: all 0.3s ease;
 }
-.btn--primary { background-color: var(--attention-color); color: white; border-color: var(--attention-color); }
+
+.btn--primary { background-color: var(--primary-purple); color: white; border-color: var(--primary-purple); }
 .btn--primary:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
 .btn--secondary { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,0.3); }
 .btn--secondary:hover { transform: translateY(-3px); }
@@ -529,18 +513,19 @@ h1 {
     transform: translateY(-2px);
     border-color: rgba(255,255,255,0.4);
 }
+
 .power-up.selected { 
-    border-color: var(--attention-color);
-    box-shadow: 0 0 10px -2px var(--attention-color), inset 0 1px 1px rgba(255,255,255,0.1), 0 2px 3px rgba(0,0,0,0.3);
+    border-color: var(--primary-purple);
+    box-shadow: 0 0 10px -2px var(--primary-purple), inset 0 1px 1px rgba(255,255,255,0.1), 0 2px 3px rgba(0,0,0,0.3);
     animation: pulseGlowPowerup 2.5s ease-in-out infinite;
 }
 
 @keyframes pulseGlowPowerup {
     0%, 100% {
-        box-shadow: 0 0 10px -2px var(--attention-color), inset 0 1px 1px rgba(255,255,255,0.1), 0 2px 3px rgba(0,0,0,0.3);
+        box-shadow: 0 0 10px -2px var(--primary-purple), inset 0 1px 1px rgba(255,255,255,0.1), 0 2px 3px rgba(0,0,0,0.3);
     }
     50% {
-        box-shadow: 0 0 18px 0px var(--attention-color), inset 0 1px 1px rgba(255,255,255,0.1), 0 2px 3px rgba(0,0,0,0.3);
+        box-shadow: 0 0 18px 0px var(--primary-purple), inset 0 1px 1px rgba(255,255,255,0.1), 0 2px 3px rgba(0,0,0,0.3);
     }
 }
 
@@ -550,7 +535,7 @@ h1 {
     filter: grayscale(50%);
 }
 .power-up .count { 
-    background-color: var(--attention-color); 
+    background-color: var(--primary-purple); 
     color: white; 
     font-size: 0.8rem; 
     font-weight: bold;
@@ -560,7 +545,7 @@ h1 {
     line-height: 22px; 
     text-align: center; 
     flex-shrink: 0;
-    box-shadow: 0 0 8px rgba(255, 69, 0, 0.5);
+    box-shadow: 0 0 8px rgba(147, 112, 219, 0.5);
 }
 
 .hidden { display: none !important; }
@@ -676,8 +661,7 @@ body.view-override.gamestate-computer_turn #computer-board-container { display: 
     }
 
     #game-status {
-        padding: 0.4rem 1rem;
-        margin-top: 0.5rem;
+        padding: 0 1rem;
     }
     #game-status span {
         font-size: 0.7rem;
@@ -718,7 +702,6 @@ body.view-override.gamestate-computer_turn #computer-board-container { display: 
 @media (max-width: 525px) {
     #game-status {
         transform: scale(1, 1);
-        max-width: 275px;
     }
 
     .secondary-actions {
@@ -736,4 +719,35 @@ body.view-override.gamestate-computer_turn #computer-board-container { display: 
     }
 }
 
-.popup{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(.5);font-size:clamp(4rem,15vw,8rem);font-weight:800;color:#fff;text-shadow:0 0 20px rgba(0,0,0,.5);pointer-events:none;opacity:0;z-index:1000}.popup.show{animation:popup-effect 1.2s ease-out forwards}@keyframes fadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}@keyframes shake{0%,100%{transform:translateX(0)}10%,30%,50%{transform:translateX(-5px)}20%,40%,60%{transform:translateX(5px)}}@keyframes popup-effect{0%,100%{opacity:0;transform:translate(-50%,-50%) scale(.5)}20%,80%{opacity:1;transform:translate(-50%,-50%) scale(1)}}.shake{animation:shake .4s}
+.popup{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(.5);font-size:clamp(4rem,15vw,8rem);font-weight:800;color:#fff;text-shadow:0 0 20px rgba(0,0,0,.5);pointer-events:none;opacity:0;z-index:1000}.popup.show{animation:popup-effect 1.2s ease-out forwards}@keyframes fadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}@keyframes popup-effect{0%,100%{opacity:0;transform:translate(-50%,-50%) scale(.5)}20%,80%{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+
+
+/* --- Multiplayer Page Styles --- */
+.multiplayer-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    min-height: 100vh;
+    width: 100%;
+    padding: 1rem;
+    box-sizing: border-box;
+    gap: 2rem;
+    opacity: 0;
+    animation: fadeIn 0.8s ease-out forwards;
+    z-index: 1;
+}
+
+.development-text {
+    font-size: clamp(2rem, 8vw, 4.5rem);
+    font-weight: 800;
+    color: white;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    animation: auroraGlow 6s ease-in-out infinite;
+}
+
+.multiplayer-container .btn {
+    max-width: 250px;
+}
