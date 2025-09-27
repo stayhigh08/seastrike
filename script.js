@@ -123,6 +123,8 @@ document.addEventListener('DOMContentLoaded', () => {
         playAgainButton.classList.add('hidden');
         enemyShipsTracker.classList.add('hidden');
 
+        startButton.classList.remove('glowing-button');
+
         updateGameProgress();
     }
 
@@ -146,6 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function startGame() {
         if (playerShips.length !== shipTemplates.length) { alert('Please place all your ships first!'); return; }
+        startButton.classList.remove('glowing-button');
         document.body.classList.add('all-ships-placed');
         placeComputerShips();
         setGameState('PLAYER_TURN');
@@ -340,6 +343,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 nextShipElement.click();
             } else {
                 typewriterEffect(gameStatusText, "Your fleet is ready!");
+                startButton.classList.add('glowing-button');
             }
         }
     }
