@@ -5,8 +5,8 @@
     --grid-color: rgba(147, 112, 219, 0.05);
     --dot-color: rgba(255, 255, 255, 0.1);
     --ship-color: #4169E1;
-    --hit-color-light: #FF7F7F; 
-    --sunk-color: #8B0000;      
+    --hit-color-light: #f95d5d; 
+    --sunk-color: #6b0505;      
     --miss-color: #457b9d;
     --cell-size: clamp(25px, 8vw, 45px);
 }
@@ -103,9 +103,9 @@ main#game-container {
 
 @keyframes auroraGlow {
     0%   { text-shadow: 0 0 20px rgba(153, 69, 255, 0.8), 0 0 30px rgba(153, 69, 255, 0.6); }
-    25%  { text-shadow: 0 0 25px rgba(20, 241, 149, 0.8), 0 0 35px rgba(20, 241, 149, 0.6); }
-    50%  { text-shadow: 0 0 20px rgba(0, 191, 255, 0.8), 0 0 30px rgba(0, 191, 255, 0.6); }
-    75%  { text-shadow: 0 0 25px rgba(20, 241, 149, 0.8), 0 0 35px rgba(20, 241, 149, 0.6); }
+    25%  { text-shadow: 0 0 25px rgba(255, 255, 255, 0.8), 0 0 35px rgba(255, 255, 255, 0.8); }
+    50%  { text-shadow: 0 0 20px rgba(152, 63, 253, 0.8), 0 0 30px rgba(152, 63, 253, 0.8); }
+    75%  { text-shadow: 0 0 25px rgba(64, 64, 64, 0.8), 0 0 35px rgba(64, 64, 64, 0.8); }
     100% { text-shadow: 0 0 20px rgba(153, 69, 255, 0.8), 0 0 30px rgba(153, 69, 255, 0.6); }
 }
 
@@ -320,7 +320,7 @@ h1 {
     z-index: 2;
 }
 
-.cell.hover-valid { background-color: rgba(46, 204, 113, 0.5); }
+.cell.hover-valid { background-color: rgba(255, 255, 255, 0.5); }
 .cell.hover-invalid { background-color: rgba(231, 76, 60, 0.5); cursor: not-allowed; }
 .cell.hover-cluster { background-color: rgba(255, 69, 0, 0.4); }
 
@@ -484,6 +484,19 @@ h1 {
 
 .btn--primary { background-color: var(--primary-purple); color: white; border-color: var(--primary-purple); }
 .btn--primary:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+
+@keyframes buttonGlow {
+    0%, 100% {
+        box-shadow: 0 0 15px -2px var(--primary-purple);
+    }
+    50% {
+        box-shadow: 0 0 25px 2px var(--primary-purple);
+    }
+}
+.btn--primary.glowing-button {
+    animation: buttonGlow 2.5s ease-in-out infinite;
+}
+
 .btn--secondary { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,0.3); }
 .btn--secondary:hover { transform: translateY(-3px); }
 
@@ -699,15 +712,22 @@ body.view-override.gamestate-computer_turn #computer-board-container { display: 
     }
 }
 
+/* --- MODIFIED SECTION FOR MOBILE BUTTON ORDERING --- */
+@media (max-width: 900px) {
+    #action-buttons-container #start-button {
+        order: -1; /* Move Start Game button to the top */
+    }
+    .secondary-actions {
+        flex-direction: column; /* Stack Rotate and Multiplayer buttons */
+    }
+}
+
 @media (max-width: 525px) {
     #game-status {
         transform: scale(1, 1);
     }
-
-    .secondary-actions {
-        flex-direction: column;
-    }
 }
+/* --- END MODIFIED SECTION --- */
 
 @media (min-height: 1000px) and (max-width: 1400px) {
     #player-board-container {
