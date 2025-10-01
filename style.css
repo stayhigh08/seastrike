@@ -606,8 +606,7 @@ body.view-override.gamestate-computer_turn #computer-board-container { display: 
     #bottom-section {
         flex-direction: row;
         width: auto;
-        background-color: rgba(26, 26, 26, 0.7);
-        border: 1px solid rgba(147, 112, 219, 0.1);
+        border: 0px solid
         border-radius: 12px;
         padding: 0.6rem 0.8rem;
         gap: 1rem;
@@ -771,3 +770,4 @@ body.view-override.gamestate-computer_turn #computer-board-container { display: 
 .multiplayer-container .btn {
     max-width: 250px;
 }
+
